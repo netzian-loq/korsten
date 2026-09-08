@@ -38,7 +38,7 @@ export const metadata: Metadata = {
   ]),
   applicationName: APP_NAME,
   title: {
-    default: `${APP_NAME} — Today`,
+    default: APP_NAME,
     template: `%s · ${APP_NAME}`,
   },
   description: APP_TAGLINE,

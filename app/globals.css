@@ -170,10 +170,6 @@
     outline-offset: -1px;
   }
 
-  .card-quiet {
-    background-color: var(--color-card-muted);
-  }
-
   /* Dark elevated surface, for chrome that should recede into the navy. */
   .panel {
     background-color: rgb(24 35 61 / 0.72);
@@ -181,10 +177,6 @@
     border-radius: var(--radius-panel);
     backdrop-filter: blur(14px) saturate(140%);
     -webkit-backdrop-filter: blur(14px) saturate(140%);
-  }
-
-  .hairline-navy {
-    border-color: var(--color-navy-700);
   }
 }
 

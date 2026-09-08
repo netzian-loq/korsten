@@ -1,5 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, JetBrains_Mono, Sora } from "next/font/google";
+import { resolveSiteOrigin } from "@/lib/site-url";
+
 import "./globals.css";
 
 const sora = Sora({
@@ -24,9 +26,16 @@ const APP_NAME = "Realtor Suite";
 const APP_TAGLINE = "Showings, pipeline, and paperwork in one place.";
 
 export const metadata: Metadata = {
-  metadataBase: new URL(
-    process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000",
-  ),
+  // Read in priority order: an explicit override first, then the canonical
+  // production domain, then this specific deployment. Members are accessed
+  // individually so the bundler can still inline them.
+  // VERCEL_PROJECT_PRODUCTION_URL beats VERCEL_URL so preview builds still
+  // point Open Graph tags at the real domain.
+  metadataBase: resolveSiteOrigin([
+    process.env.NEXT_PUBLIC_SITE_URL,
+    process.env.VERCEL_PROJECT_PRODUCTION_URL,
+    process.env.VERCEL_URL,
+  ]),
   applicationName: APP_NAME,
   title: {
     default: `${APP_NAME} — Today`,

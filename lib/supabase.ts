@@ -1,7 +1,9 @@
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
-const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+// Trimmed, because a variable that exists but holds "" or whitespace is
+// unconfigured — the same trap that broke the build on metadataBase.
+const url = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim();
+const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim();
 
 /**
  * Whether the app has credentials to reach Supabase at all. NEXT_PUBLIC_ vars
@@ -16,6 +18,13 @@ let cached: SupabaseClient | null = null;
 /** The shared client, or `null` when the app is running on seed data. */
 export function getSupabase(): SupabaseClient | null {
   if (!url || !anonKey) return null;
-  cached ??= createClient(url, anonKey);
-  return cached;
+
+  try {
+    cached ??= createClient(url, anonKey);
+    return cached;
+  } catch {
+    // A malformed URL should drop the roster back to seed data, the way an
+    // unreachable Supabase already does — not throw a 500 from the page.
+    return null;
+  }
 }

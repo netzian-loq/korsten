@@ -78,6 +78,13 @@ export default function Home() {
           Buyer progress
           <ArrowRight className="size-4" strokeWidth={2.5} aria-hidden />
         </Link>
+        <Link
+          href="/inspection"
+          className={SECONDARY_LINK}
+        >
+          Inspection reports
+          <ArrowRight className="size-4" strokeWidth={2.5} aria-hidden />
+        </Link>
       </nav>
 
       {installed ? (

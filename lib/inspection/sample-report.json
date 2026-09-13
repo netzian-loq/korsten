@@ -1,0 +1,87 @@
+{
+  "propertyAddress": "302 Bellwether Ave, Portland OR 97211",
+  "inspectionDate": "2026-09-21",
+  "sourceFileName": "302-bellwether-inspection.pdf",
+  "findings": [
+    {
+      "title": "Double-tapped breakers in main panel",
+      "location": "Garage — main electrical panel",
+      "detail": "Two circuits share a single breaker lug on three breakers, which can overload the connection.",
+      "severity": "critical",
+      "reference": "p. 14, Electrical 3.2",
+      "estimatedCost": 0
+    },
+    {
+      "title": "No GFCI protection at kitchen counter outlets",
+      "location": "Kitchen — counter receptacles",
+      "detail": "Four receptacles within six feet of the sink are not GFCI protected.",
+      "severity": "critical",
+      "reference": "p. 9, Kitchen 2.1",
+      "estimatedCost": 0
+    },
+    {
+      "title": "Missing smoke alarm on lower level",
+      "location": "Lower hallway",
+      "detail": "No smoke alarm present outside the lower-level bedrooms.",
+      "severity": "critical",
+      "reference": "p. 6, Safety 1.4",
+      "estimatedCost": 0
+    },
+    {
+      "title": "Roof covering at end of service life",
+      "location": "Roof — all elevations",
+      "detail": "Three-tab shingles show granule loss and cupping throughout; inspector estimates under two years remaining.",
+      "severity": "major",
+      "reference": "p. 21, Roofing 6.1",
+      "estimatedCost": 14500
+    },
+    {
+      "title": "Water heater past expected life",
+      "location": "Utility room",
+      "detail": "Unit manufactured 2009; typical service life is 10 to 12 years. No active leak observed.",
+      "severity": "major",
+      "reference": "p. 17, Plumbing 5.3",
+      "estimatedCost": 0
+    },
+    {
+      "title": "Corrosion visible on furnace heat exchanger",
+      "location": "Utility room — forced air furnace",
+      "detail": "Surface corrosion noted; inspector recommends evaluation by an HVAC contractor before the heating season.",
+      "severity": "major",
+      "reference": "p. 18, HVAC 5.8",
+      "estimatedCost": 0
+    },
+    {
+      "title": "Negative grading along north foundation",
+      "location": "Exterior — north elevation",
+      "detail": "Soil slopes toward the foundation for roughly 20 feet, directing water at the wall.",
+      "severity": "major",
+      "reference": "p. 11, Site 2.6",
+      "estimatedCost": 2200
+    },
+    {
+      "title": "Scuffed paint and minor drywall damage",
+      "location": "Second bedroom",
+      "detail": "Wear at baseboard height along two walls. No structural concern noted.",
+      "severity": "cosmetic",
+      "reference": "p. 27, Interior 8.2",
+      "estimatedCost": 0
+    },
+    {
+      "title": "Pocket door binds in track",
+      "location": "Hall bathroom",
+      "detail": "Door sticks partway and requires force to close.",
+      "severity": "cosmetic",
+      "reference": "p. 26, Interior 8.1",
+      "estimatedCost": 0
+    },
+    {
+      "title": "Worn caulk at tub surround",
+      "location": "Hall bathroom",
+      "detail": "Caulk is separating at the tub-to-tile joint. No moisture detected behind the surround.",
+      "severity": "cosmetic",
+      "reference": "p. 26, Interior 8.4",
+      "estimatedCost": 0
+    }
+  ]
+}

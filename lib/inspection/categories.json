@@ -1,0 +1,52 @@
+{
+  "severities": [
+    {
+      "id": "critical",
+      "label": "Critical / Safety Hazards",
+      "short": "Critical",
+      "guidance": "Anything unsafe or actively failing: exposed or double-tapped wiring, gas leaks, no GFCI near water, structural movement, failed heat, active water intrusion, missing smoke alarms.",
+      "includedByDefault": true
+    },
+    {
+      "id": "major",
+      "label": "Major Systems & Capital Expenses",
+      "short": "Major",
+      "guidance": "Big-ticket items with a real dollar cost and a service life: roof, HVAC, water heater, sewer line, foundation drainage, windows, major appliances at end of life.",
+      "includedByDefault": true
+    },
+    {
+      "id": "cosmetic",
+      "label": "Cosmetic / Minor Maintenance",
+      "short": "Cosmetic",
+      "guidance": "Wear, appearance, and small handyman items: scuffed paint, sticking doors, loose handles, worn caulk, dirty filters, minor landscaping.",
+      "includedByDefault": false
+    }
+  ],
+
+  "resolutions": [
+    {
+      "id": "repair",
+      "label": "Seller to repair before closing",
+      "phrasing": "Seller to repair prior to closing, by a licensed contractor, with receipts provided at final walkthrough.",
+      "needsAmount": false
+    },
+    {
+      "id": "credit",
+      "label": "Seller credit at closing",
+      "phrasing": "Seller to issue a closing credit of {amount} in lieu of repair.",
+      "needsAmount": true
+    },
+    {
+      "id": "price-reduction",
+      "label": "Price reduction",
+      "phrasing": "Purchase price to be reduced by {amount}.",
+      "needsAmount": true
+    },
+    {
+      "id": "none",
+      "label": "Noted, no action requested",
+      "phrasing": "Noted for the buyer's awareness. No action requested.",
+      "needsAmount": false
+    }
+  ]
+}

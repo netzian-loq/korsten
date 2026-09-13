@@ -1,0 +1,70 @@
+{
+  "id": "standard-30-day",
+  "name": "Standard 30-Day Closing",
+  "summary": "Conventional financing, the usual inspection and appraisal windows.",
+  "milestones": [
+    {
+      "id": "offer-accepted",
+      "name": "Offer Accepted",
+      "offsetDays": 0,
+      "buyerNote": "The seller has signed. From here it is a run of deadlines, and you will see each one land on this page as it happens.",
+      "waitingOn": "Nothing — sit tight, we will tell you when we need you"
+    },
+    {
+      "id": "earnest-money",
+      "name": "Earnest Money Deposit",
+      "offsetDays": 3,
+      "buyerNote": "Your good-faith deposit goes to the escrow company. It is not a fee — it is credited back to you at closing.",
+      "waitingOn": "You — wire the deposit to escrow"
+    },
+    {
+      "id": "home-inspection",
+      "name": "Home Inspection",
+      "offsetDays": 7,
+      "buyerNote": "An inspector spends two or three hours walking the home and sends a written report. You are welcome to come along.",
+      "waitingOn": "Your inspector's report"
+    },
+    {
+      "id": "inspection-response",
+      "name": "Inspection Response",
+      "offsetDays": 12,
+      "buyerNote": "We decide together what to ask the seller for — repairs, a credit, or nothing — and send it over.",
+      "waitingOn": "The seller's answer to our request"
+    },
+    {
+      "id": "appraisal",
+      "name": "Appraisal",
+      "offsetDays": 16,
+      "buyerNote": "Your lender sends an appraiser to confirm the home is worth what you agreed to pay. Nothing is required from you.",
+      "waitingOn": "Your lender's appraiser"
+    },
+    {
+      "id": "title-search",
+      "name": "Title Search",
+      "offsetDays": 21,
+      "buyerNote": "The title company checks that the seller can legally sell and that no old debts are attached to the property.",
+      "waitingOn": "The title company"
+    },
+    {
+      "id": "loan-approval",
+      "name": "Loan Approval",
+      "offsetDays": 25,
+      "buyerNote": "Underwriting signs off on your file. This is the last big hurdle. Avoid new credit cards or job changes until it clears.",
+      "waitingOn": "Your lender's underwriter"
+    },
+    {
+      "id": "final-walkthrough",
+      "name": "Final Walkthrough",
+      "offsetDays": 29,
+      "buyerNote": "We walk the home one last time to confirm it is in the condition you agreed to, and that any repairs were done.",
+      "waitingOn": "You and me, on site"
+    },
+    {
+      "id": "closing-day",
+      "name": "Closing Day",
+      "offsetDays": 30,
+      "buyerNote": "You sign, the funds move, and the keys are yours. Bring photo ID.",
+      "waitingOn": "The closing table"
+    }
+  ]
+}

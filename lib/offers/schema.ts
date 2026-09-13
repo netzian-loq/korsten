@@ -50,29 +50,11 @@ export type OfferComparison = {
 /* Dates                                                                      */
 /* -------------------------------------------------------------------------- */
 
-/** Parses `yyyy-mm-dd` as a local date. `new Date(iso)` would read it as UTC. */
-export function parseISODate(iso: string): Date | null {
-  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso);
-  if (!match) return null;
+// Shared with the timeline module. Imported for use below *and* re-exported,
+// since `export … from` alone would not bind the name in this module.
+import { dateRank } from "../dates.ts";
 
-  const [year, month, day] = [+match[1], +match[2], +match[3]];
-  const date = new Date(year, month - 1, day);
-  return date.getMonth() === month - 1 && date.getDate() === day ? date : null;
-}
-
-/** Sortable numeric form of a date — no timezone involved. */
-export function dateRank(iso: string): number | null {
-  return parseISODate(iso) ? Number(iso.replaceAll("-", "")) : null;
-}
-
-/** Whole days from `today` to the closing date, for "30-day close". */
-export function daysUntil(iso: string, today: Date): number | null {
-  const target = parseISODate(iso);
-  if (!target) return null;
-
-  const midnight = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-  return Math.round((target.getTime() - midnight.getTime()) / 86_400_000);
-}
+export { dateRank, daysUntil, parseISODate } from "../dates.ts";
 
 /* -------------------------------------------------------------------------- */
 /* Badges                                                                     */

@@ -1,0 +1,77 @@
+{
+  "id": "fha-va-45-day",
+  "name": "FHA / VA Loan Timeline",
+  "summary": "Government-backed financing, with the stricter appraisal and repair rules.",
+  "milestones": [
+    {
+      "id": "offer-accepted",
+      "name": "Offer Accepted",
+      "offsetDays": 0,
+      "buyerNote": "The seller has signed. FHA and VA loans take a little longer because the appraisal is stricter, so we have built that in.",
+      "waitingOn": "Nothing — sit tight, we will tell you when we need you"
+    },
+    {
+      "id": "earnest-money",
+      "name": "Earnest Money Deposit",
+      "offsetDays": 3,
+      "buyerNote": "Your good-faith deposit goes to the escrow company. It is credited back to you at closing.",
+      "waitingOn": "You — wire the deposit to escrow"
+    },
+    {
+      "id": "home-inspection",
+      "name": "Home Inspection",
+      "offsetDays": 7,
+      "buyerNote": "An inspector spends two or three hours walking the home and sends a written report. You are welcome to come along.",
+      "waitingOn": "Your inspector's report"
+    },
+    {
+      "id": "inspection-response",
+      "name": "Inspection Response",
+      "offsetDays": 12,
+      "buyerNote": "We decide together what to ask the seller for — repairs, a credit, or nothing — and send it over.",
+      "waitingOn": "The seller's answer to our request"
+    },
+    {
+      "id": "appraisal",
+      "name": "FHA / VA Appraisal",
+      "offsetDays": 18,
+      "buyerNote": "This appraisal does two jobs: confirms the value, and checks the home meets minimum property standards. It is stricter than a conventional one.",
+      "waitingOn": "The assigned appraiser"
+    },
+    {
+      "id": "repair-requirements",
+      "name": "Required Repairs",
+      "offsetDays": 25,
+      "buyerNote": "If the appraiser flagged anything — peeling paint, handrails, a roof issue — it has to be fixed before the loan can fund.",
+      "waitingOn": "The seller's contractor"
+    },
+    {
+      "id": "title-search",
+      "name": "Title Search",
+      "offsetDays": 30,
+      "buyerNote": "The title company checks that the seller can legally sell and that no old debts are attached to the property.",
+      "waitingOn": "The title company"
+    },
+    {
+      "id": "loan-approval",
+      "name": "Loan Approval",
+      "offsetDays": 38,
+      "buyerNote": "Underwriting signs off on your file. Avoid new credit cards, big purchases, or job changes until this clears.",
+      "waitingOn": "Your lender's underwriter"
+    },
+    {
+      "id": "final-walkthrough",
+      "name": "Final Walkthrough",
+      "offsetDays": 43,
+      "buyerNote": "We walk the home one last time to confirm the required repairs were done and nothing else has changed.",
+      "waitingOn": "You and me, on site"
+    },
+    {
+      "id": "closing-day",
+      "name": "Closing Day",
+      "offsetDays": 45,
+      "buyerNote": "You sign, the funds move, and the keys are yours. Bring photo ID.",
+      "waitingOn": "The closing table"
+    }
+  ]
+}

@@ -1,0 +1,63 @@
+{
+  "id": "cash-14-day",
+  "name": "Cash Offer / 14-Day Close",
+  "summary": "No lender, no appraisal. The short timeline cash buys earn.",
+  "milestones": [
+    {
+      "id": "offer-accepted",
+      "name": "Offer Accepted",
+      "offsetDays": 0,
+      "buyerNote": "The seller has signed. Paying cash means no lender and no appraisal, which is why this moves so quickly.",
+      "waitingOn": "Nothing — sit tight, we will tell you when we need you"
+    },
+    {
+      "id": "earnest-money",
+      "name": "Earnest Money Deposit",
+      "offsetDays": 2,
+      "buyerNote": "Your good-faith deposit goes to the escrow company. It is credited back to you at closing.",
+      "waitingOn": "You — wire the deposit to escrow"
+    },
+    {
+      "id": "proof-of-funds",
+      "name": "Proof of Funds Verified",
+      "offsetDays": 3,
+      "buyerNote": "The seller's side confirms your funds are real and available. A recent bank statement is usually all it takes.",
+      "waitingOn": "You — send the statement"
+    },
+    {
+      "id": "home-inspection",
+      "name": "Home Inspection",
+      "offsetDays": 5,
+      "buyerNote": "An inspector walks the home and sends a written report. Short timelines make this window tight, so we book it early.",
+      "waitingOn": "Your inspector's report"
+    },
+    {
+      "id": "inspection-response",
+      "name": "Inspection Response",
+      "offsetDays": 8,
+      "buyerNote": "We decide together what to ask the seller for, and send it over.",
+      "waitingOn": "The seller's answer to our request"
+    },
+    {
+      "id": "title-search",
+      "name": "Title Search",
+      "offsetDays": 10,
+      "buyerNote": "The title company checks that the seller can legally sell and that no old debts follow the property.",
+      "waitingOn": "The title company"
+    },
+    {
+      "id": "final-walkthrough",
+      "name": "Final Walkthrough",
+      "offsetDays": 13,
+      "buyerNote": "We walk the home one last time to confirm nothing has changed since your inspection.",
+      "waitingOn": "You and me, on site"
+    },
+    {
+      "id": "closing-day",
+      "name": "Closing Day",
+      "offsetDays": 14,
+      "buyerNote": "You sign, the funds move, and the keys are yours. Bring photo ID.",
+      "waitingOn": "The closing table"
+    }
+  ]
+}

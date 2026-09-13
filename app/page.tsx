@@ -10,6 +10,9 @@ type IosNavigator = Navigator & { standalone?: boolean };
 
 const STANDALONE = "(display-mode: standalone)";
 
+const SECONDARY_LINK =
+  "inline-flex items-center gap-2 rounded-full border border-navy-600 px-5 py-2.5 text-sm font-semibold text-mist-200 transition-colors hover:border-accent-500/60 hover:bg-navy-800/60 hover:text-mist-50";
+
 function subscribe(onChange: () => void) {
   const query = window.matchMedia(STANDALONE);
   query.addEventListener("change", onChange);
@@ -63,9 +66,16 @@ export default function Home() {
         </Link>
         <Link
           href="/offers"
-          className="inline-flex items-center gap-2 rounded-full border border-navy-600 px-5 py-2.5 text-sm font-semibold text-mist-200 transition-colors hover:border-accent-500/60 hover:bg-navy-800/60 hover:text-mist-50"
+          className={SECONDARY_LINK}
         >
           Offer comparison
+          <ArrowRight className="size-4" strokeWidth={2.5} aria-hidden />
+        </Link>
+        <Link
+          href="/progress"
+          className={SECONDARY_LINK}
+        >
+          Buyer progress
           <ArrowRight className="size-4" strokeWidth={2.5} aria-hidden />
         </Link>
       </nav>

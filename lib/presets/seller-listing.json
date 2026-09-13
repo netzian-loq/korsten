@@ -1,0 +1,79 @@
+{
+  "id": "seller-listing",
+  "name": "New Seller Listing",
+  "clientType": "Seller",
+  "summary": "Taking a listing from signed agreement to closed sale.",
+  "categories": [
+    {
+      "id": "intake",
+      "name": "Intake",
+      "tasks": [
+        {
+          "id": "property-basics",
+          "kind": "field",
+          "label": "Add Property Address & Target Price",
+          "hint": "The address as it will appear on the listing, and the number you agreed on.",
+          "placeholder": "302 Bellwether Ave — $865,000"
+        },
+        {
+          "id": "seller-timeline",
+          "kind": "field",
+          "label": "Add Seller Timeline",
+          "hint": "When they need to be out, and anything that cannot move.",
+          "placeholder": "Listing by 20 Sep, must close before 15 Nov"
+        }
+      ]
+    },
+    {
+      "id": "listing-paperwork",
+      "name": "Listing Paperwork",
+      "tasks": [
+        {
+          "id": "listing-agreement",
+          "kind": "document",
+          "label": "Upload Signed Listing Agreement",
+          "hint": "You cannot market the property until this comes back signed.",
+          "requiresSignature": true
+        },
+        {
+          "id": "seller-disclosure",
+          "kind": "document",
+          "label": "Upload Seller Property Disclosure",
+          "hint": "Every known defect. This is the one that causes lawsuits when it is rushed.",
+          "requiresSignature": true
+        }
+      ]
+    },
+    {
+      "id": "marketing",
+      "name": "Marketing",
+      "tasks": [
+        {
+          "id": "photos-booked",
+          "kind": "action",
+          "label": "Book the photographer",
+          "hint": "Tick once the shoot is confirmed and the sellers know to have it tidy."
+        },
+        {
+          "id": "listing-live",
+          "kind": "action",
+          "label": "Put the listing live on the MLS",
+          "hint": "Tick once it is published and the photos have come through."
+        }
+      ]
+    },
+    {
+      "id": "closing",
+      "name": "Closing",
+      "tasks": [
+        {
+          "id": "closing-disclosure",
+          "kind": "document",
+          "label": "Upload Closing Disclosure",
+          "hint": "Check the net proceeds against what you quoted the seller.",
+          "requiresSignature": true
+        }
+      ]
+    }
+  ]
+}

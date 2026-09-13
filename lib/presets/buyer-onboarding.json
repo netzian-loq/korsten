@@ -1,0 +1,92 @@
+{
+  "id": "buyer-onboarding",
+  "name": "New Buyer Pipeline",
+  "clientType": "Buyer",
+  "summary": "Intake through closing for a buyer you are representing.",
+  "categories": [
+    {
+      "id": "intake",
+      "name": "Intake",
+      "tasks": [
+        {
+          "id": "buyer-basics",
+          "kind": "field",
+          "label": "Add Buyer Name & Budget",
+          "hint": "The name that goes on the paperwork, and the range they are shopping in.",
+          "placeholder": "Marisol Reyes — $780k to $950k"
+        },
+        {
+          "id": "target-areas",
+          "kind": "field",
+          "label": "Add Target Neighborhoods",
+          "hint": "Where they want to look. Separate areas with commas.",
+          "placeholder": "Alberta, Concordia, Woodstock"
+        },
+        {
+          "id": "intro-call",
+          "kind": "action",
+          "label": "Log the intro call",
+          "hint": "Tick this once you have walked them through the process end to end."
+        }
+      ]
+    },
+    {
+      "id": "agreements",
+      "name": "Agreements",
+      "tasks": [
+        {
+          "id": "agency-disclosure",
+          "kind": "document",
+          "label": "Upload Signed Agency Disclosure",
+          "hint": "Required before you show a single property. Must come back signed.",
+          "requiresSignature": true
+        },
+        {
+          "id": "buyer-rep-agreement",
+          "kind": "document",
+          "label": "Upload Buyer Representation Agreement",
+          "hint": "Sets your commission and the term. Must come back signed.",
+          "requiresSignature": true
+        }
+      ]
+    },
+    {
+      "id": "financing",
+      "name": "Financing",
+      "tasks": [
+        {
+          "id": "pre-approval",
+          "kind": "document",
+          "label": "Upload Pre-Approval Letter",
+          "hint": "Sellers will ask for this with every offer. Check the expiry date."
+        },
+        {
+          "id": "lender-contact",
+          "kind": "field",
+          "label": "Add Lender Contact",
+          "hint": "Who to call when an offer needs a proof-of-funds letter fast.",
+          "placeholder": "Dana Whitfield, Cascade Mortgage — (503) 555-0119"
+        }
+      ]
+    },
+    {
+      "id": "closing",
+      "name": "Closing",
+      "tasks": [
+        {
+          "id": "purchase-agreement",
+          "kind": "document",
+          "label": "Upload Signed Purchase Agreement",
+          "hint": "The accepted offer, with every addendum attached.",
+          "requiresSignature": true
+        },
+        {
+          "id": "closing-disclosure",
+          "kind": "document",
+          "label": "Upload Closing Disclosure",
+          "hint": "Compare it against the estimate before the signing appointment."
+        }
+      ]
+    }
+  ]
+}

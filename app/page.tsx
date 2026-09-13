@@ -1,7 +1,8 @@
 "use client";
 
-import { Check, Share } from "lucide-react";
+import { ArrowRight, Check, Share } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 import { useSyncExternalStore } from "react";
 
 /** iOS marks Home Screen apps here rather than through the display-mode query. */
@@ -52,13 +53,21 @@ export default function Home() {
         Showings, pipeline, and paperwork in one place.
       </p>
 
+      <Link
+        href="/clients"
+        className="mt-8 inline-flex items-center gap-2 rounded-full bg-accent-500 px-5 py-2.5 text-sm font-semibold text-navy-950 transition-colors hover:bg-accent-400"
+      >
+        Open the client directory
+        <ArrowRight className="size-4" strokeWidth={2.5} aria-hidden />
+      </Link>
+
       {installed ? (
-        <p className="mt-9 inline-flex items-center gap-2 rounded-full border border-good-500/30 bg-good-500/10 px-4 py-2 text-sm font-medium text-good-400">
+        <p className="mt-6 inline-flex items-center gap-2 rounded-full border border-good-500/30 bg-good-500/10 px-4 py-2 text-sm font-medium text-good-400">
           <Check className="size-4" strokeWidth={2.5} aria-hidden />
           Running full screen
         </p>
       ) : (
-        <section className="card mt-9 w-full p-5 text-left">
+        <section className="card mt-6 w-full p-5 text-left">
           <h2 className="text-eyebrow uppercase text-ink-400">
             Add to Home Screen
           </h2>

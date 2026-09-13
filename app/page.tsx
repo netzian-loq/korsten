@@ -53,13 +53,22 @@ export default function Home() {
         Showings, pipeline, and paperwork in one place.
       </p>
 
-      <Link
-        href="/clients"
-        className="mt-8 inline-flex items-center gap-2 rounded-full bg-accent-500 px-5 py-2.5 text-sm font-semibold text-navy-950 transition-colors hover:bg-accent-400"
-      >
-        Open the client directory
-        <ArrowRight className="size-4" strokeWidth={2.5} aria-hidden />
-      </Link>
+      <nav aria-label="Sections" className="mt-8 flex flex-wrap justify-center gap-2.5">
+        <Link
+          href="/clients"
+          className="inline-flex items-center gap-2 rounded-full bg-accent-500 px-5 py-2.5 text-sm font-semibold text-navy-950 transition-colors hover:bg-accent-400"
+        >
+          Clients &amp; Documents
+          <ArrowRight className="size-4" strokeWidth={2.5} aria-hidden />
+        </Link>
+        <Link
+          href="/offers"
+          className="inline-flex items-center gap-2 rounded-full border border-navy-600 px-5 py-2.5 text-sm font-semibold text-mist-200 transition-colors hover:border-accent-500/60 hover:bg-navy-800/60 hover:text-mist-50"
+        >
+          Offer comparison
+          <ArrowRight className="size-4" strokeWidth={2.5} aria-hidden />
+        </Link>
+      </nav>
 
       {installed ? (
         <p className="mt-6 inline-flex items-center gap-2 rounded-full border border-good-500/30 bg-good-500/10 px-4 py-2 text-sm font-medium text-good-400">

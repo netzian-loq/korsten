@@ -1,0 +1,81 @@
+{
+  "id": "blank-offer-board",
+  "name": "Offer comparison",
+  "maxOffers": 4,
+  "initialSlots": 2,
+
+  "contingencies": [
+    {
+      "id": "appraisal",
+      "label": "Appraisal",
+      "hint": "Buyer can renegotiate or walk if it appraises under the price."
+    },
+    {
+      "id": "inspection",
+      "label": "Inspection",
+      "hint": "Buyer can ask for repairs or walk after the report."
+    },
+    {
+      "id": "financing",
+      "label": "Financing",
+      "hint": "Buyer can walk if their loan falls through. Cash offers drop this."
+    },
+    {
+      "id": "home-sale",
+      "label": "Home sale",
+      "hint": "Buyer has to sell their own place first. The riskiest one to accept."
+    }
+  ],
+
+  "fields": {
+    "label": {
+      "label": "Offer",
+      "placeholder": "Offer 1",
+      "hint": "Rename it to the buyer or their agent once you know."
+    },
+    "purchasePrice": {
+      "label": "Purchase price",
+      "placeholder": "865000",
+      "hint": "What they are offering, before any concessions."
+    },
+    "downPaymentPct": {
+      "label": "Down payment",
+      "placeholder": "20",
+      "hint": "Percent down. Choosing Cash sets this to 100."
+    },
+    "financingType": {
+      "label": "Financing",
+      "hint": "Cash closes fastest and cannot fall apart over a loan."
+    },
+    "closingDate": {
+      "label": "Closing date",
+      "hint": "The date on the contract. The earliest one earns Fastest Close."
+    },
+    "contingencies": {
+      "label": "Contingencies kept",
+      "hint": "Tick what the buyer is keeping. Anything unticked is waived."
+    },
+    "specialTerms": {
+      "label": "Special terms",
+      "placeholder": "Escalates to $890k in $5k steps · 14-day seller rent-back",
+      "hint": "Escalation clauses, rent-backs, appliances — anything unusual."
+    },
+    "agentNotes": {
+      "label": "Agent notes",
+      "placeholder": "Local lender, responsive. Buyer has walked it twice.",
+      "hint": "Your read on the offer. Hidden in Seller Presentation view."
+    }
+  },
+
+  "blankOffer": {
+    "label": "Offer",
+    "hidden": false,
+    "purchasePrice": null,
+    "downPaymentPct": 20,
+    "financingType": "Conventional",
+    "closingDate": "",
+    "contingencies": ["appraisal", "inspection", "financing"],
+    "specialTerms": "",
+    "agentNotes": ""
+  }
+}

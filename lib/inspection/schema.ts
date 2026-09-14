@@ -55,6 +55,8 @@ export type ReportSource = "claude" | "sample";
 
 export type InspectionReport = {
   id: string;
+  /** The deal this report belongs to. */
+  dealId: string;
   propertyAddress: string;
   inspectionDate: string;
   sourceFileName: string;

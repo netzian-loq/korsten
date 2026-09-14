@@ -5,40 +5,43 @@ import { useSyncExternalStore } from "react";
 import type { InspectionFinding, InspectionReport, Severity } from "./inspection";
 
 /**
- * The report currently open, kept in localStorage.
+ * Inspection reports, one per deal, kept in localStorage.
  *
- * `null` until one is extracted or the sample is loaded — that null is what
- * puts the upload screen on the page.
+ * `null` for a deal with no report yet — that null is what puts the upload
+ * screen on the page.
  */
 
-const KEY = "realtor-suite:inspection:v1";
+const KEY = "realtor-suite:inspections:v1";
 
-let cache: InspectionReport | null = null;
-let loaded = false;
+type Reports = Record<string, InspectionReport>;
+
+const EMPTY: Reports = {};
+
+let cache: Reports | null = null;
 const listeners = new Set<() => void>();
 
-function read(): InspectionReport | null {
-  if (loaded) return cache;
-  loaded = true;
+function read(): Reports {
+  if (cache) return cache;
 
   try {
     const raw = localStorage.getItem(KEY);
-    const parsed = raw ? (JSON.parse(raw) as InspectionReport) : null;
-    cache = parsed && Array.isArray(parsed.findings) ? parsed : null;
+    const parsed: unknown = raw ? JSON.parse(raw) : {};
+    cache =
+      parsed && typeof parsed === "object" && !Array.isArray(parsed)
+        ? (parsed as Reports)
+        : {};
   } catch {
-    cache = null;
+    cache = {};
   }
 
   return cache;
 }
 
-function write(next: InspectionReport | null) {
+function write(next: Reports) {
   cache = next;
-  loaded = true;
 
   try {
-    if (next) localStorage.setItem(KEY, JSON.stringify(next));
-    else localStorage.removeItem(KEY);
+    localStorage.setItem(KEY, JSON.stringify(next));
   } catch {
     // Quota or private mode: the change still applies for this session.
   }
@@ -51,7 +54,7 @@ function subscribe(onStoreChange: () => void) {
 
   const onStorage = (event: StorageEvent) => {
     if (event.key !== KEY) return;
-    loaded = false;
+    cache = null;
     onStoreChange();
   };
   window.addEventListener("storage", onStorage);
@@ -62,29 +65,41 @@ function subscribe(onStoreChange: () => void) {
   };
 }
 
-const getServerSnapshot = () => null;
+const getServerSnapshot = () => EMPTY;
 
-export function useInspectionReport(): InspectionReport | null {
-  return useSyncExternalStore(subscribe, read, getServerSnapshot);
+export function useInspectionReport(dealId: string): InspectionReport | null {
+  return useSyncExternalStore(subscribe, read, getServerSnapshot)[dealId] ?? null;
 }
 
 /* -------------------------------------------------------------------------- */
 /* Mutations                                                                  */
 /* -------------------------------------------------------------------------- */
 
-export const setReport = (report: InspectionReport) => write(report);
-export const clearReport = () => write(null);
+const save = (report: InspectionReport) =>
+  write({ ...read(), [report.dealId]: report });
 
-export function updateReport(patch: Partial<InspectionReport>) {
-  const report = read();
-  if (report) write({ ...report, ...patch });
+export const setReport = (report: InspectionReport) => save(report);
+
+export function clearReport(dealId: string) {
+  const remaining = { ...read() };
+  delete remaining[dealId];
+  write(remaining);
 }
 
-export function updateFinding(findingId: string, patch: Partial<InspectionFinding>) {
-  const report = read();
+export function updateReport(dealId: string, patch: Partial<InspectionReport>) {
+  const report = read()[dealId];
+  if (report) save({ ...report, ...patch });
+}
+
+export function updateFinding(
+  dealId: string,
+  findingId: string,
+  patch: Partial<InspectionFinding>,
+) {
+  const report = read()[dealId];
   if (!report) return;
 
-  write({
+  save({
     ...report,
     findings: report.findings.map((finding) =>
       finding.id === findingId ? { ...finding, ...patch } : finding,
@@ -93,18 +108,17 @@ export function updateFinding(findingId: string, patch: Partial<InspectionFindin
 }
 
 /** Reads `included` from the store, so rapid toggles cannot clobber each other. */
-export function toggleFinding(findingId: string) {
-  const report = read();
-  const finding = report?.findings.find((candidate) => candidate.id === findingId);
-  if (finding) updateFinding(findingId, { included: !finding.included });
+export function toggleFinding(dealId: string, findingId: string) {
+  const finding = read()[dealId]?.findings.find((c) => c.id === findingId);
+  if (finding) updateFinding(dealId, findingId, { included: !finding.included });
 }
 
 /** Include or drop a whole bucket — "add all the cosmetic items" in one click. */
-export function setBucketIncluded(severity: Severity, included: boolean) {
-  const report = read();
+export function setBucketIncluded(dealId: string, severity: Severity, included: boolean) {
+  const report = read()[dealId];
   if (!report) return;
 
-  write({
+  save({
     ...report,
     findings: report.findings.map((finding) =>
       finding.severity === severity ? { ...finding, included } : finding,

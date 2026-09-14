@@ -106,6 +106,7 @@ test("a credit with no amount reads as to-be-agreed rather than $0", () => {
 
 const report = (findings: InspectionFinding[]): InspectionReport => ({
   id: "r1",
+  dealId: "d1",
   propertyAddress: "302 Bellwether Ave",
   inspectionDate: "2026-09-21",
   sourceFileName: "report.pdf",

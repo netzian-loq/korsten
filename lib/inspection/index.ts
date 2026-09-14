@@ -48,9 +48,10 @@ export const resolutionPreset = (resolution: ResolutionType): ResolutionPreset =
   RESOLUTION_PRESETS.find((preset) => preset.id === resolution) ?? RESOLUTION_PRESETS[0];
 
 /** The worked example, for trying the tool before an API key exists. */
-export function sampleReport(id: string, now: string): InspectionReport {
+export function sampleReport(dealId: string, id: string, now: string): InspectionReport {
   return {
     id,
+    dealId,
     propertyAddress: sampleJson.propertyAddress,
     inspectionDate: sampleJson.inspectionDate,
     sourceFileName: sampleJson.sourceFileName,

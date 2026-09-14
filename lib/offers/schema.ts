@@ -31,15 +31,67 @@ export type Offer = {
   closingDate: string;
   /** Contingencies the buyer is KEEPING. Waived ones are simply absent. */
   contingencies: ContingencyId[];
+  /** Seller-paid closing costs. The term that makes top price lose on net. */
+  sellerConcessions: number | null;
   specialTerms: string;
   /** For the agent and seller. Hidden in presentation view. */
   agentNotes: string;
 };
 
+/** Costs that apply to the sale, not to any one offer, so entered once. */
+export type SellerCosts = {
+  commissionPct: number;
+  /** Title, escrow and transfer taxes, as a share of price. */
+  closingCostPct: number;
+  /** What the seller still owes. Shifts every net equally. */
+  mortgagePayoff: number;
+};
+
+export const DEFAULT_SELLER_COSTS: SellerCosts = {
+  commissionPct: 5,
+  closingCostPct: 1.2,
+  mortgagePayoff: 0,
+};
+
+export type OfferMath = {
+  commission: number;
+  closingCosts: number;
+  concessions: number;
+  payoff: number;
+  /** What the seller actually walks away with. */
+  netProceeds: number;
+};
+
+/**
+ * Net proceeds for one offer.
+ *
+ * This is the number a seller decides on. The highest bid routinely loses here
+ * once concessions and a percentage commission land, which is the entire reason
+ * the board exists rather than a list of prices.
+ */
+export function offerMath(offer: Offer, costs: SellerCosts): OfferMath | null {
+  if (!isFilled(offer)) return null;
+
+  const price = offer.purchasePrice ?? 0;
+  const commission = price * (costs.commissionPct / 100);
+  const closingCosts = price * (costs.closingCostPct / 100);
+  const concessions = Math.max(0, offer.sellerConcessions ?? 0);
+  const payoff = Math.max(0, costs.mortgagePayoff);
+
+  return {
+    commission,
+    closingCosts,
+    concessions,
+    payoff,
+    netProceeds: price - commission - closingCosts - concessions - payoff,
+  };
+}
+
 export type OfferComparison = {
   id: string;
-  propertyAddress: string;
-  listPrice: number | null;
+  /** The listing this board belongs to. */
+  dealId: string;
+  sellerCosts: SellerCosts;
   createdAt: string;
   /** Presentation view: input controls and agent notes are hidden. */
   presentationMode: boolean;
@@ -61,12 +113,14 @@ export { dateRank, daysUntil, parseISODate } from "../dates.ts";
 /* -------------------------------------------------------------------------- */
 
 export type BadgeKind =
+  | "highest-net"
   | "highest-price"
   | "fastest-close"
   | "all-cash"
   | "fewest-contingencies";
 
 export const BADGE_LABEL: Record<BadgeKind, string> = {
+  "highest-net": "Highest Net",
   "highest-price": "Highest Price",
   "fastest-close": "Fastest Close",
   "all-cash": "All Cash",
@@ -74,7 +128,9 @@ export const BADGE_LABEL: Record<BadgeKind, string> = {
 };
 
 /** Fixed render order, so a card's badges never reshuffle as terms change. */
+/** Net leads: it is the number the seller is actually choosing on. */
 export const BADGE_ORDER: BadgeKind[] = [
+  "highest-net",
   "highest-price",
   "fastest-close",
   "all-cash",
@@ -115,7 +171,10 @@ function awardBy(
  * Badges per offer id. Hidden and unpriced offers take no part, so toggling an
  * offer off genuinely removes it from the comparison rather than just hiding it.
  */
-export function awardBadges(offers: Offer[]): Record<string, BadgeKind[]> {
+export function awardBadges(
+  offers: Offer[],
+  costs: SellerCosts = DEFAULT_SELLER_COSTS,
+): Record<string, BadgeKind[]> {
   const badges: Record<string, BadgeKind[]> = Object.fromEntries(
     offers.map((offer) => [offer.id, [] as BadgeKind[]]),
   );
@@ -127,6 +186,10 @@ export function awardBadges(offers: Offer[]): Record<string, BadgeKind[]> {
     for (const id of ids) badges[id].push(kind);
   };
 
+  give(
+    "highest-net",
+    awardBy(ranked, (o) => offerMath(o, costs)?.netProceeds ?? null, "max"),
+  );
   give("highest-price", awardBy(ranked, (o) => o.purchasePrice, "max"));
   give("fastest-close", awardBy(ranked, (o) => dateRank(o.closingDate), "min"));
   give(

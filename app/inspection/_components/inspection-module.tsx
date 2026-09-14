@@ -3,7 +3,6 @@
 import { FileText, FlaskConical, RotateCcw, Sparkles } from "lucide-react";
 import { useState } from "react";
 
-import type { Deal } from "@/lib/deals";
 import { clearReport, updateReport, useInspectionReport } from "@/lib/inspection-store";
 
 import { AddendumPreview } from "./addendum-preview";
@@ -15,11 +14,11 @@ const FIELD =
 const FIELD_LABEL =
   "block text-[0.625rem] font-semibold uppercase tracking-wider text-mist-500";
 
-export function InspectionModule({ deal }: { deal: Deal }) {
-  const report = useInspectionReport(deal.id);
+export function InspectionModule() {
+  const report = useInspectionReport();
   const [confirmClear, setConfirmClear] = useState(false);
 
-  if (!report) return <UploadDropzone deal={deal} />;
+  if (!report) return <UploadDropzone />;
 
   return (
     <>
@@ -30,7 +29,7 @@ export function InspectionModule({ deal }: { deal: Deal }) {
               <span className={FIELD_LABEL}>Property</span>
               <input
                 value={report.propertyAddress}
-                onChange={(event) => updateReport(deal.id, { propertyAddress: event.target.value })}
+                onChange={(event) => updateReport({ propertyAddress: event.target.value })}
                 placeholder="302 Bellwether Ave"
                 className={FIELD}
               />
@@ -40,7 +39,7 @@ export function InspectionModule({ deal }: { deal: Deal }) {
               <input
                 type="date"
                 value={report.inspectionDate}
-                onChange={(event) => updateReport(deal.id, { inspectionDate: event.target.value })}
+                onChange={(event) => updateReport({ inspectionDate: event.target.value })}
                 className={`${FIELD} font-mono tabular-nums`}
               />
             </label>
@@ -66,7 +65,7 @@ export function InspectionModule({ deal }: { deal: Deal }) {
               type="button"
               onClick={() => {
                 if (confirmClear) {
-                  clearReport(deal.id);
+                  clearReport();
                   setConfirmClear(false);
                 } else {
                   setConfirmClear(true);
@@ -94,7 +93,7 @@ export function InspectionModule({ deal }: { deal: Deal }) {
       </section>
 
       <div className="mt-4 grid grid-cols-1 items-start gap-4 xl:grid-cols-[minmax(0,1fr)_26rem]">
-        <FindingsMatrix dealId={deal.id} findings={report.findings} />
+        <FindingsMatrix findings={report.findings} />
         <AddendumPreview report={report} />
       </div>
     </>

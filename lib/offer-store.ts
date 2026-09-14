@@ -9,52 +9,49 @@ import {
   type ContingencyId,
   type Offer,
   type OfferComparison,
-  type SellerCosts,
 } from "./offers";
 
 /**
- * Offer boards, one per listing, kept in localStorage.
+ * The offer board, kept in localStorage.
  *
- * Keyed by deal id rather than being a single global board: a listing agent
- * with two listings taking offers had nowhere to put the second one.
+ * One board at a time — the screen compares offers on a single property. Read
+ * through useSyncExternalStore so a reload keeps the work and every mounted
+ * component re-renders on a write.
  */
 
-const KEY = "realtor-suite:offer-boards:v1";
-
-type Boards = Record<string, OfferComparison>;
-
-const EMPTY: Boards = {};
-
-let cache: Boards | null = null;
-const listeners = new Set<() => void>();
+const KEY = "realtor-suite:offer-board:v1";
 
 /**
- * Blank boards for listings that have not been touched yet.
- *
- * Memoised so `getSnapshot` keeps returning the same object — creating one on
- * each read would be a new reference every render and spin React forever. They
- * are only persisted once the agent actually edits something.
+ * What the server renders: the blank skeleton, with a fixed id so the
+ * reference is stable and hydration matches. The stored board replaces it on
+ * the first client read.
  */
-const blanks = new Map<string, OfferComparison>();
+const SERVER_BOARD = createBlankBoard("server", "");
 
-function read(): Boards {
+let cache: OfferComparison | null = null;
+const listeners = new Set<() => void>();
+
+function read(): OfferComparison {
   if (cache) return cache;
 
   try {
     const raw = localStorage.getItem(KEY);
-    const parsed: unknown = raw ? JSON.parse(raw) : {};
-    cache =
-      parsed && typeof parsed === "object" && !Array.isArray(parsed)
-        ? (parsed as Boards)
-        : {};
+    if (raw) {
+      const parsed = JSON.parse(raw) as OfferComparison;
+      if (Array.isArray(parsed?.offers)) {
+        cache = parsed;
+        return cache;
+      }
+    }
   } catch {
-    cache = {};
+    // Private mode or corrupt JSON — fall through to a fresh board.
   }
 
+  cache = createBlankBoard(crypto.randomUUID(), new Date().toISOString());
   return cache;
 }
 
-function write(next: Boards) {
+function write(next: OfferComparison) {
   cache = next;
 
   try {
@@ -64,19 +61,6 @@ function write(next: Boards) {
   }
 
   for (const listener of listeners) listener();
-}
-
-function boardFor(dealId: string): OfferComparison {
-  const stored = read()[dealId];
-  if (stored) return stored;
-
-  let blank = blanks.get(dealId);
-  if (!blank) {
-    // Deterministic id and no timestamp, so server and client agree.
-    blank = createBlankBoard(dealId, `board-${dealId}`, "");
-    blanks.set(dealId, blank);
-  }
-  return blank;
 }
 
 function subscribe(onStoreChange: () => void) {
@@ -95,33 +79,23 @@ function subscribe(onStoreChange: () => void) {
   };
 }
 
-const serverBoards = () => EMPTY;
+const getServerSnapshot = () => SERVER_BOARD;
 
-export function useOfferBoard(dealId: string): OfferComparison {
-  useSyncExternalStore(subscribe, read, serverBoards);
-  return boardFor(dealId);
+export function useOfferBoard(): OfferComparison {
+  return useSyncExternalStore(subscribe, read, getServerSnapshot);
 }
 
 /* -------------------------------------------------------------------------- */
 /* Mutations                                                                  */
 /* -------------------------------------------------------------------------- */
 
-function save(board: OfferComparison) {
-  write({ ...read(), [board.dealId]: board });
+export function updateBoard(patch: Partial<OfferComparison>) {
+  write({ ...read(), ...patch });
 }
 
-export function updateBoard(dealId: string, patch: Partial<OfferComparison>) {
-  save({ ...boardFor(dealId), ...patch });
-}
-
-export function updateSellerCosts(dealId: string, patch: Partial<SellerCosts>) {
-  const board = boardFor(dealId);
-  save({ ...board, sellerCosts: { ...board.sellerCosts, ...patch } });
-}
-
-export function updateOffer(dealId: string, offerId: string, patch: Partial<Offer>) {
-  const board = boardFor(dealId);
-  save({
+export function updateOffer(offerId: string, patch: Partial<Offer>) {
+  const board = read();
+  write({
     ...board,
     offers: board.offers.map((offer) =>
       offer.id === offerId ? { ...offer, ...patch } : offer,
@@ -129,46 +103,53 @@ export function updateOffer(dealId: string, offerId: string, patch: Partial<Offe
   });
 }
 
-export function addOffer(dealId: string) {
-  const board = boardFor(dealId);
+export function addOffer() {
+  const board = read();
   if (board.offers.length >= MAX_OFFERS) return;
 
-  save({
+  write({
     ...board,
-    offers: [...board.offers, blankOffer(board.offers.length, `offer-${crypto.randomUUID()}`)],
+    offers: [
+      ...board.offers,
+      blankOffer(board.offers.length, `offer-${crypto.randomUUID()}`),
+    ],
   });
 }
 
-export function removeOffer(dealId: string, offerId: string) {
-  const board = boardFor(dealId);
-  save({ ...board, offers: board.offers.filter((offer) => offer.id !== offerId) });
+export function removeOffer(offerId: string) {
+  const board = read();
+  write({
+    ...board,
+    offers: board.offers.filter((offer) => offer.id !== offerId),
+  });
 }
 
 /** Quick-toggle: keeps the card, drops it out of the comparison. */
-export function toggleOfferHidden(dealId: string, offerId: string) {
-  const offer = boardFor(dealId).offers.find((candidate) => candidate.id === offerId);
-  if (offer) updateOffer(dealId, offerId, { hidden: !offer.hidden });
+export function toggleOfferHidden(offerId: string) {
+  const board = read();
+  const offer = board.offers.find((candidate) => candidate.id === offerId);
+  if (offer) updateOffer(offerId, { hidden: !offer.hidden });
 }
 
-/** Reads the list from the store, so several taps cannot clobber each other. */
-export function toggleContingency(
-  dealId: string,
-  offerId: string,
-  contingency: ContingencyId,
-) {
-  const offer = boardFor(dealId).offers.find((candidate) => candidate.id === offerId);
+/**
+ * Toggles one contingency.
+ *
+ * Reads the list from the store rather than from the rendered props: several
+ * chips tapped before React re-renders would otherwise each compute from the
+ * same stale array and overwrite one another.
+ */
+export function toggleContingency(offerId: string, contingency: ContingencyId) {
+  const board = read();
+  const offer = board.offers.find((candidate) => candidate.id === offerId);
   if (!offer) return;
 
-  updateOffer(dealId, offerId, {
+  updateOffer(offerId, {
     contingencies: offer.contingencies.includes(contingency)
       ? offer.contingencies.filter((current) => current !== contingency)
       : [...offer.contingencies, contingency],
   });
 }
 
-export function resetBoard(dealId: string) {
-  blanks.delete(dealId);
-  const remaining = { ...read() };
-  delete remaining[dealId];
-  write(remaining);
+export function resetBoard() {
+  write(createBlankBoard(crypto.randomUUID(), new Date().toISOString()));
 }

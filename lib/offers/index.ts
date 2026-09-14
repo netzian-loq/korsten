@@ -1,10 +1,8 @@
 import blankBoard from "./blank-board.json";
-import {
-  DEFAULT_SELLER_COSTS,
-  type ContingencyId,
-  type Offer,
-  type OfferComparison,
-  type SellerCosts,
+import type {
+  ContingencyId,
+  Offer,
+  OfferComparison,
 } from "./schema";
 
 /**
@@ -37,7 +35,6 @@ type BoardTemplate = {
   contingencies: ContingencyOption[];
   fields: Record<string, FieldGuide>;
   blankOffer: Omit<Offer, "id">;
-  sellerCosts: SellerCosts;
 };
 
 // A single internal template rather than a folder of user-authored files, so
@@ -49,7 +46,7 @@ export const MAX_OFFERS = TEMPLATE.maxOffers;
 export const CONTINGENCIES = TEMPLATE.contingencies;
 
 /** Guided label, placeholder, and hint for one field of the offer form. */
-export const fieldGuide = (key: string): FieldGuide =>
+export const fieldGuide = (key: keyof Offer | "label"): FieldGuide =>
   TEMPLATE.fields[key] ?? { label: String(key), hint: "" };
 
 export function blankOffer(index: number, id: string): Offer {
@@ -60,16 +57,12 @@ export function blankOffer(index: number, id: string): Offer {
   };
 }
 
-/** A fresh skeleton board for one listing: pre-formatted slots, nothing filled. */
-export function createBlankBoard(
-  dealId: string,
-  id: string,
-  now: string,
-): OfferComparison {
+/** A fresh skeleton board: pre-formatted slots, nothing filled in. */
+export function createBlankBoard(id: string, now: string): OfferComparison {
   return {
     id,
-    dealId,
-    sellerCosts: { ...(TEMPLATE.sellerCosts ?? DEFAULT_SELLER_COSTS) },
+    propertyAddress: "",
+    listPrice: null,
     createdAt: now,
     presentationMode: false,
     offers: Array.from({ length: TEMPLATE.initialSlots }, (_, index) =>

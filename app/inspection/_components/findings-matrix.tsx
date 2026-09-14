@@ -30,13 +30,7 @@ const INPUT =
   "rounded-md border border-card-edge bg-card-muted px-2 py-1 text-xs text-ink-900 transition-colors focus:border-accent-400 focus:bg-card";
 
 /** The categorized issue matrix: preset buckets, one toggle per finding. */
-export function FindingsMatrix({
-  dealId,
-  findings,
-}: {
-  dealId: string;
-  findings: InspectionFinding[];
-}) {
+export function FindingsMatrix({ findings }: { findings: InspectionFinding[] }) {
   const buckets = bucketFindings(findings);
 
   return (
@@ -70,7 +64,7 @@ export function FindingsMatrix({
                 </span>
                 <button
                   type="button"
-                  onClick={() => setBucketIncluded(dealId, bucket.severity, !allIn)}
+                  onClick={() => setBucketIncluded(bucket.severity, !allIn)}
                   className="rounded-md bg-card-sunken px-2.5 py-1.5 text-xs font-semibold text-ink-700 transition-colors hover:bg-mist-200"
                 >
                   {allIn ? "Drop all" : "Include all"}
@@ -80,7 +74,7 @@ export function FindingsMatrix({
 
             <ul className="mt-3 divide-y divide-card-edge">
               {bucket.findings.map((finding) => (
-                <FindingRow key={finding.id} dealId={dealId} finding={finding} />
+                <FindingRow key={finding.id} finding={finding} />
               ))}
             </ul>
           </section>
@@ -90,13 +84,7 @@ export function FindingsMatrix({
   );
 }
 
-function FindingRow({
-  dealId,
-  finding,
-}: {
-  dealId: string;
-  finding: InspectionFinding;
-}) {
+function FindingRow({ finding }: { finding: InspectionFinding }) {
   const needsAmount = RESOLUTION_NEEDS_AMOUNT[finding.resolution];
 
   return (
@@ -106,7 +94,7 @@ function FindingRow({
         type="button"
         role="switch"
         aria-checked={finding.included}
-        onClick={() => toggleFinding(dealId, finding.id)}
+        onClick={() => toggleFinding(finding.id)}
         aria-label={`${finding.included ? "Remove" : "Add"} ${finding.title} ${finding.included ? "from" : "to"} the repair request`}
         className={`mt-0.5 inline-flex h-5 w-9 shrink-0 items-center rounded-full p-0.5 transition-colors ${
           finding.included ? "bg-good-500" : "bg-card-sunken ring-1 ring-card-edge ring-inset"
@@ -150,7 +138,7 @@ function FindingRow({
               id={`resolution-${finding.id}`}
               value={finding.resolution}
               onChange={(event) =>
-                updateFinding(dealId, finding.id, {
+                updateFinding(finding.id, {
                   resolution: event.target.value as ResolutionType,
                 })
               }
@@ -173,7 +161,7 @@ function FindingRow({
                   step={100}
                   value={finding.requestedAmount ?? ""}
                   onChange={(event) =>
-                    updateFinding(dealId, finding.id, {
+                    updateFinding(finding.id, {
                       requestedAmount:
                         event.target.value === "" ? null : Number(event.target.value) || 0,
                     })
@@ -187,7 +175,7 @@ function FindingRow({
 
             <input
               value={finding.agentNote}
-              onChange={(event) => updateFinding(dealId, finding.id, { agentNote: event.target.value })}
+              onChange={(event) => updateFinding(finding.id, { agentNote: event.target.value })}
               placeholder="Private note (never sent)"
               aria-label={`Private note for ${finding.title}`}
               className={`min-w-0 flex-1 ${INPUT}`}

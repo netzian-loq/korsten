@@ -3,7 +3,6 @@
 import {
   Banknote,
   Eye,
-  HandCoins,
   EyeOff,
   ShieldCheck,
   TrendingUp,
@@ -28,12 +27,10 @@ import {
   type BadgeKind,
   type FinancingType,
   type Offer,
-  type OfferMath,
 } from "@/lib/offers";
 
 /** Their spec asks for green tags; the icon is what tells them apart. */
 const BADGE_ICON: Record<BadgeKind, LucideIcon> = {
-  "highest-net": HandCoins,
   "highest-price": TrendingUp,
   "fastest-close": Zap,
   "all-cash": Banknote,
@@ -47,18 +44,13 @@ const LABEL =
   "block text-[0.625rem] font-semibold uppercase tracking-wider text-ink-400";
 
 type Props = {
-  dealId: string;
   offer: Offer;
   badges: BadgeKind[];
-  /** Null while the slot has no price. */
-  math: OfferMath | null;
-  /** The best net on the board, so each card can show the gap to it. */
-  bestNet: number;
   /** Seller Presentation view: no inputs, no agent notes, no card controls. */
   presenting: boolean;
 };
 
-export function OfferCard({ dealId, offer, badges, math, bestNet, presenting }: Props) {
+export function OfferCard({ offer, badges, presenting }: Props) {
   const guide = fieldGuide;
   const number = (value: string) => (value === "" ? null : Number(value) || 0);
 
@@ -80,7 +72,7 @@ export function OfferCard({ dealId, offer, badges, math, bestNet, presenting }: 
         ) : (
           <input
             value={offer.label}
-            onChange={(event) => updateOffer(dealId, offer.id, { label: event.target.value })}
+            onChange={(event) => updateOffer(offer.id, { label: event.target.value })}
             aria-label={`Name for ${offer.label}`}
             placeholder={guide("label").placeholder}
             className="-ml-1.5 min-w-0 flex-1 truncate rounded-md bg-transparent px-1.5 py-0.5 text-title text-ink-900 transition-colors hover:bg-card-muted focus:bg-card-muted"
@@ -91,7 +83,7 @@ export function OfferCard({ dealId, offer, badges, math, bestNet, presenting }: 
           <>
             <button
               type="button"
-              onClick={() => toggleOfferHidden(dealId, offer.id)}
+              onClick={() => toggleOfferHidden(offer.id)}
               aria-pressed={offer.hidden}
               title={
                 offer.hidden
@@ -111,7 +103,7 @@ export function OfferCard({ dealId, offer, badges, math, bestNet, presenting }: 
             </button>
             <button
               type="button"
-              onClick={() => removeOffer(dealId, offer.id)}
+              onClick={() => removeOffer(offer.id)}
               aria-label={`Remove ${offer.label}`}
               className="grid size-7 shrink-0 place-items-center rounded-md text-ink-400 transition-colors hover:bg-card-sunken hover:text-ink-900"
             >
@@ -144,29 +136,6 @@ export function OfferCard({ dealId, offer, badges, math, bestNet, presenting }: 
         </p>
       )}
 
-      {math && (
-        <div className="mt-3 rounded-md bg-card-sunken px-3 py-2.5">
-          <p className="text-[0.625rem] font-semibold uppercase tracking-wider text-ink-400">
-            {fieldGuide("netProceeds").label}
-          </p>
-          <p
-            data-numeric
-            className={`mt-0.5 font-display text-metric ${
-              math.netProceeds < 0 ? "text-alert-700" : "text-ink-900"
-            }`}
-          >
-            {formatDollars(math.netProceeds)}
-          </p>
-          {bestNet > 0 && (
-            <p className="mt-0.5 text-[0.6875rem] font-medium text-ink-500">
-              {math.netProceeds >= bestNet
-                ? "Best net on the board"
-                : `${formatDollars(bestNet - math.netProceeds)} less than the best`}
-            </p>
-          )}
-        </div>
-      )}
-
       <dl className="mt-3.5 flex flex-1 flex-col gap-3">
         <Row guide={guide("purchasePrice")} presenting={presenting} value={formatDollars(offer.purchasePrice)}>
           <input
@@ -176,7 +145,7 @@ export function OfferCard({ dealId, offer, badges, math, bestNet, presenting }: 
             step={1000}
             value={offer.purchasePrice ?? ""}
             onChange={(event) =>
-              updateOffer(dealId, offer.id, { purchasePrice: number(event.target.value) })
+              updateOffer(offer.id, { purchasePrice: number(event.target.value) })
             }
             placeholder={guide("purchasePrice").placeholder}
             className={NUMERIC}
@@ -208,7 +177,7 @@ export function OfferCard({ dealId, offer, badges, math, bestNet, presenting }: 
               step={1}
               value={offer.downPaymentPct ?? ""}
               onChange={(event) =>
-                updateOffer(dealId, offer.id, { downPaymentPct: number(event.target.value) })
+                updateOffer(offer.id, { downPaymentPct: number(event.target.value) })
               }
               placeholder={guide("downPaymentPct").placeholder}
               className={NUMERIC}
@@ -222,7 +191,6 @@ export function OfferCard({ dealId, offer, badges, math, bestNet, presenting }: 
                 const financingType = event.target.value as FinancingType;
                 // Cash means the whole price is down, by definition.
                 updateOffer(
-                  dealId,
                   offer.id,
                   financingType === "Cash"
                     ? { financingType, downPaymentPct: 100 }
@@ -241,29 +209,6 @@ export function OfferCard({ dealId, offer, badges, math, bestNet, presenting }: 
         </div>
 
         <Row
-          guide={guide("sellerConcessions")}
-          presenting={presenting}
-          value={
-            offer.sellerConcessions ? formatDollars(offer.sellerConcessions) : "None"
-          }
-        >
-          <input
-            type="number"
-            inputMode="numeric"
-            min={0}
-            step={500}
-            value={offer.sellerConcessions ?? ""}
-            onChange={(event) =>
-              updateOffer(dealId, offer.id, {
-                sellerConcessions: number(event.target.value),
-              })
-            }
-            placeholder={guide("sellerConcessions").placeholder}
-            className={NUMERIC}
-          />
-        </Row>
-
-        <Row
           guide={guide("closingDate")}
           presenting={presenting}
           value={formatISODateShort(offer.closingDate)}
@@ -271,7 +216,7 @@ export function OfferCard({ dealId, offer, badges, math, bestNet, presenting }: 
           <input
             type="date"
             value={offer.closingDate}
-            onChange={(event) => updateOffer(dealId, offer.id, { closingDate: event.target.value })}
+            onChange={(event) => updateOffer(offer.id, { closingDate: event.target.value })}
             className={NUMERIC}
           />
         </Row>
@@ -308,7 +253,7 @@ export function OfferCard({ dealId, offer, badges, math, bestNet, presenting }: 
                 <button
                   key={contingency.id}
                   type="button"
-                  onClick={() => toggleContingency(dealId, offer.id, contingency.id)}
+                  onClick={() => toggleContingency(offer.id, contingency.id)}
                   aria-pressed={kept}
                   title={contingency.hint}
                   className={`rounded-full px-2 py-1 text-[0.6875rem] font-semibold transition-colors ${
@@ -337,7 +282,7 @@ export function OfferCard({ dealId, offer, badges, math, bestNet, presenting }: 
           <textarea
             rows={2}
             value={offer.specialTerms}
-            onChange={(event) => updateOffer(dealId, offer.id, { specialTerms: event.target.value })}
+            onChange={(event) => updateOffer(offer.id, { specialTerms: event.target.value })}
             placeholder={guide("specialTerms").placeholder}
             className={`${INPUT} resize-y`}
           />
@@ -349,7 +294,7 @@ export function OfferCard({ dealId, offer, badges, math, bestNet, presenting }: 
             <textarea
               rows={2}
               value={offer.agentNotes}
-              onChange={(event) => updateOffer(dealId, offer.id, { agentNotes: event.target.value })}
+              onChange={(event) => updateOffer(offer.id, { agentNotes: event.target.value })}
               placeholder={guide("agentNotes").placeholder}
               className={`${INPUT} resize-y`}
             />

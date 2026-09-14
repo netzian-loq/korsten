@@ -3,12 +3,11 @@
 import { CircleAlert, CloudUpload, FlaskConical, LoaderCircle } from "lucide-react";
 import { useState } from "react";
 
-import type { Deal } from "@/lib/deals";
 import { setReport } from "@/lib/inspection-store";
 import { sampleReport, toFindings, type InspectionReport } from "@/lib/inspection";
 
 /** The pre-formatted skeleton the agent lands on. */
-export function UploadDropzone({ deal }: { deal: Deal }) {
+export function UploadDropzone() {
   const [dragging, setDragging] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -35,9 +34,7 @@ export function UploadDropzone({ deal }: { deal: Deal }) {
 
       const report: InspectionReport = {
         id: crypto.randomUUID(),
-        dealId: deal.id,
-        // The report's own address wins; the deal's is the fallback.
-        propertyAddress: payload.propertyAddress || deal.address,
+        propertyAddress: payload.propertyAddress ?? "",
         inspectionDate: payload.inspectionDate ?? "",
         sourceFileName: file.name,
         extractedAt: new Date().toISOString(),
@@ -59,7 +56,7 @@ export function UploadDropzone({ deal }: { deal: Deal }) {
   }
 
   const loadSample = () =>
-    setReport(sampleReport(deal.id, crypto.randomUUID(), new Date().toISOString()));
+    setReport(sampleReport(crypto.randomUUID(), new Date().toISOString()));
 
   return (
     <div className="mt-6">

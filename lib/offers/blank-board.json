@@ -3,6 +3,7 @@
   "name": "Offer comparison",
   "maxOffers": 4,
   "initialSlots": 2,
+
   "contingencies": [
     {
       "id": "appraisal",
@@ -25,6 +26,7 @@
       "hint": "Buyer has to sell their own place first. The riskiest one to accept."
     }
   ],
+
   "fields": {
     "label": {
       "label": "Offer",
@@ -55,24 +57,16 @@
     },
     "specialTerms": {
       "label": "Special terms",
-      "placeholder": "Escalates to $890k in $5k steps \u00b7 14-day seller rent-back",
-      "hint": "Escalation clauses, rent-backs, appliances \u2014 anything unusual."
+      "placeholder": "Escalates to $890k in $5k steps · 14-day seller rent-back",
+      "hint": "Escalation clauses, rent-backs, appliances — anything unusual."
     },
     "agentNotes": {
       "label": "Agent notes",
       "placeholder": "Local lender, responsive. Buyer has walked it twice.",
       "hint": "Your read on the offer. Hidden in Seller Presentation view."
-    },
-    "sellerConcessions": {
-      "label": "Seller concessions",
-      "placeholder": "0",
-      "hint": "Closing costs the buyer is asking you to pay. Comes straight off your net."
-    },
-    "netProceeds": {
-      "label": "Your net",
-      "hint": "Price less commission, title and escrow, concessions and your payoff."
     }
   },
+
   "blankOffer": {
     "label": "Offer",
     "hidden": false,
@@ -80,18 +74,8 @@
     "downPaymentPct": 20,
     "financingType": "Conventional",
     "closingDate": "",
-    "contingencies": [
-      "appraisal",
-      "inspection",
-      "financing"
-    ],
+    "contingencies": ["appraisal", "inspection", "financing"],
     "specialTerms": "",
-    "agentNotes": "",
-    "sellerConcessions": null
-  },
-  "sellerCosts": {
-    "commissionPct": 5,
-    "closingCostPct": 1.2,
-    "mortgagePayoff": 0
+    "agentNotes": ""
   }
 }

@@ -3,8 +3,6 @@ import { test } from "node:test";
 
 import {
   awardBadges,
-  DEFAULT_SELLER_COSTS,
-  offerMath,
   daysUntil,
   isInPlay,
   parseISODate,
@@ -20,7 +18,6 @@ const offer = (id: string, over: Partial<Offer> = {}): Offer => ({
   financingType: "Conventional",
   closingDate: "2026-10-15",
   contingencies: ["appraisal", "inspection", "financing"],
-  sellerConcessions: null,
   specialTerms: "",
   agentNotes: "",
   ...over,
@@ -33,7 +30,7 @@ test("the highest price wins Highest Price", () => {
     offer("a", { purchasePrice: 880_000 }),
     offer("b", { purchasePrice: 865_000 }),
   ];
-  assert.ok(badgesOf(offers, "a").includes("highest-price"));
+  assert.deepEqual(badgesOf(offers, "a"), ["highest-price"]);
   assert.deepEqual(badgesOf(offers, "b"), []);
 });
 
@@ -127,7 +124,6 @@ test("badges always come back in a fixed order", () => {
   ];
 
   assert.deepEqual(badgesOf(offers, "best"), [
-    "highest-net",
     "highest-price",
     "fastest-close",
     "all-cash",
@@ -143,50 +139,4 @@ test("dates parse locally and count whole days", () => {
   const today = new Date(2026, 8, 15); // 15 September 2026
   assert.equal(daysUntil("2026-10-15", today), 30, "a 30-day close");
   assert.equal(daysUntil("", today), null);
-});
-
-/* -------------------------------------------------------------------------- */
-/* Net proceeds — what the seller is actually choosing on                      */
-/* -------------------------------------------------------------------------- */
-
-test("net proceeds subtract commission, title and escrow, concessions and payoff", () => {
-  const math = offerMath(offer("a", { purchasePrice: 800_000, sellerConcessions: 10_000 }), {
-    commissionPct: 5,
-    closingCostPct: 1.2,
-    mortgagePayoff: 300_000,
-  })!;
-
-  assert.equal(math.commission, 40_000);
-  assert.equal(math.closingCosts, 9_600);
-  assert.equal(math.concessions, 10_000);
-  assert.equal(math.payoff, 300_000);
-  assert.equal(math.netProceeds, 440_400);
-});
-
-test("an unpriced slot has no net at all", () => {
-  assert.equal(offerMath(offer("blank", { purchasePrice: null }), DEFAULT_SELLER_COSTS), null);
-});
-
-test("the top bid can lose on net once concessions land", () => {
-  // The whole reason a listing agent needs this board rather than a price list.
-  const offers = [
-    offer("loud", { purchasePrice: 900_000, sellerConcessions: 25_000 }),
-    offer("quiet", { purchasePrice: 885_000, sellerConcessions: 0 }),
-  ];
-
-  const badges = awardBadges(offers, DEFAULT_SELLER_COSTS);
-  assert.deepEqual(badges.loud, ["highest-price"], "bids the most");
-  assert.deepEqual(badges.quiet, ["highest-net"], "but this one pays the seller more");
-});
-
-test("the payoff shifts every net equally and never changes the winner", () => {
-  const offers = [
-    offer("a", { purchasePrice: 900_000 }),
-    offer("b", { purchasePrice: 850_000 }),
-  ];
-  const withPayoff = awardBadges(offers, { ...DEFAULT_SELLER_COSTS, mortgagePayoff: 400_000 });
-  const without = awardBadges(offers, DEFAULT_SELLER_COSTS);
-
-  assert.deepEqual(withPayoff.a, without.a);
-  assert.deepEqual(withPayoff.b, without.b);
 });

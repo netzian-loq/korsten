@@ -48,15 +48,6 @@ export type ClientProgress = {
   createdAt: string;
 };
 
-/**
- * The minimum a record needs to carry a timeline. Both ClientProgress and the
- * Deal in lib/deals satisfy it, so the derivation below works for either.
- */
-export type HasMilestones = {
-  acceptedDate: string;
-  milestones: Record<string, MilestoneState>;
-};
-
 export type MilestoneStatus = "done" | "current" | "upcoming";
 
 export type DerivedMilestone = TimelineMilestone & {
@@ -82,7 +73,7 @@ export type DerivedMilestone = TimelineMilestone & {
  * sees a single "you are here".
  */
 export function deriveMilestones(
-  progress: HasMilestones,
+  progress: ClientProgress,
   preset: TimelinePreset | null,
 ): DerivedMilestone[] {
   if (!preset) return [];
@@ -141,12 +132,12 @@ export function summarize(milestones: DerivedMilestone[]): ProgressSummary {
  * reopens everything after: a timeline with a gap in the middle would put the
  * buyer's "you are here" marker somewhere that is not true.
  */
-export function setMilestoneDone<T extends HasMilestones>(
-  progress: T,
+export function setMilestoneDone(
+  progress: ClientProgress,
   preset: TimelinePreset | null,
   milestoneId: string,
   done: boolean,
-): T {
+): ClientProgress {
   if (!preset) return progress;
 
   const index = preset.milestones.findIndex((m) => m.id === milestoneId);

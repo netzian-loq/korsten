@@ -4,6 +4,7 @@ import { CircleAlert } from "lucide-react";
 import { useSyncExternalStore } from "react";
 
 import { BuyerTimeline } from "@/app/_components/buyer-timeline";
+import { formatISODateShort } from "@/lib/format";
 import { getTimelinePreset } from "@/lib/timeline";
 import { decodeProgress, tokenFromHash } from "@/lib/timeline/share-link";
 
@@ -44,9 +45,20 @@ export function TrackedDeal() {
   }
 
   return (
-    <BuyerTimeline
-      progress={progress}
-      preset={getTimelinePreset(progress.presetId)}
-    />
+    <>
+      <BuyerTimeline
+        progress={progress}
+        preset={getTimelinePreset(progress.presetId)}
+      />
+
+      {/* Say how old this is. A buyer who assumes it is live will read a stale
+          date as a broken promise. */}
+      <p className="mt-4 text-center text-xs leading-relaxed text-mist-500">
+        {progress.sharedAt
+          ? `Correct as of ${formatISODateShort(progress.sharedAt)}.`
+          : "This is a snapshot, not a live page."}{" "}
+        Your agent sends an updated link when dates move.
+      </p>
+    </>
   );
 }

@@ -34,8 +34,41 @@ function fromBase64Url(token: string): string {
   return new TextDecoder().decode(bytes);
 }
 
-export function encodeProgress(progress: ClientProgress): string {
-  return toBase64Url(JSON.stringify(progress));
+/**
+ * Exactly what the buyer receives.
+ *
+ * Built field by field rather than spreading the whole record, so agent-side
+ * bookkeeping (which link was last sent, internal ids) never rides along in a
+ * link handed to a client.
+ */
+export function sharedPayload(progress: ClientProgress) {
+  return {
+    buyerName: progress.buyerName,
+    propertyAddress: progress.propertyAddress,
+    presetId: progress.presetId,
+    acceptedDate: progress.acceptedDate,
+    milestones: progress.milestones,
+  };
+}
+
+/**
+ * A stable signature of what the buyer would see.
+ *
+ * Milestone keys are sorted so that re-saving the same state cannot produce a
+ * different signature and cry "out of date" when nothing actually moved.
+ */
+export function fingerprint(progress: ClientProgress): string {
+  const payload = sharedPayload(progress);
+  const milestones = Object.keys(payload.milestones)
+    .sort()
+    .map((key) => [key, payload.milestones[key]] as const);
+
+  return JSON.stringify({ ...payload, milestones });
+}
+
+/** `sharedAt` rides along so the buyer can see how old the snapshot is. */
+export function encodeProgress(progress: ClientProgress, sharedAt: string): string {
+  return toBase64Url(JSON.stringify({ ...sharedPayload(progress), sharedAt }));
 }
 
 /** Parses a token back, returning null for anything malformed or tampered. */
@@ -56,15 +89,27 @@ export function decodeProgress(token: string): ClientProgress | null {
       return null;
     }
 
-    return parsed as ClientProgress;
+    // The payload carries only the buyer-facing fields; fill in the rest so
+    // the shape the timeline renderer expects is still satisfied. Links sent
+    // before this change still carry id/createdAt, so those win when present.
+    const payload = parsed as Partial<ClientProgress>;
+    return {
+      ...payload,
+      id: payload.id ?? "shared",
+      createdAt: payload.createdAt ?? "",
+    } as ClientProgress;
   } catch {
     return null;
   }
 }
 
 /** The full link to hand the buyer. */
-export function shareUrl(origin: string, progress: ClientProgress): string {
-  return `${origin.replace(/\/$/, "")}/track${PREFIX}${encodeProgress(progress)}`;
+export function shareUrl(
+  origin: string,
+  progress: ClientProgress,
+  sharedAt: string,
+): string {
+  return `${origin.replace(/\/$/, "")}/track${PREFIX}${encodeProgress(progress, sharedAt)}`;
 }
 
 /** Pulls the token back out of a `#d=…` hash. */

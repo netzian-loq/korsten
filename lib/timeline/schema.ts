@@ -46,6 +46,9 @@ export type ClientProgress = {
   /** Keyed by milestone id. Absent means untouched. */
   milestones: Record<string, MilestoneState>;
   createdAt: string;
+  /** When the agent last copied a link, and the signature of what it held. */
+  sharedAt?: string;
+  sharedFingerprint?: string;
 };
 
 export type MilestoneStatus = "done" | "current" | "upcoming";

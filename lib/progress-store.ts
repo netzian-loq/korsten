@@ -103,6 +103,11 @@ export function setMilestoneDate(milestoneId: string, date: string) {
   });
 }
 
+/** Records that a link was copied, so the panel can spot later edits. */
+export function markShared(sharedAt: string, sharedFingerprint: string) {
+  updateProgress({ sharedAt, sharedFingerprint });
+}
+
 export function resetProgress() {
   write(createProgress(crypto.randomUUID(), new Date().toISOString()));
 }

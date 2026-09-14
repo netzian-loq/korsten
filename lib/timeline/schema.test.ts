@@ -1,7 +1,13 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import { decodeProgress, encodeProgress, shareUrl, tokenFromHash } from "./share-link.ts";
+import {
+  decodeProgress,
+  encodeProgress,
+  fingerprint,
+  shareUrl,
+  tokenFromHash,
+} from "./share-link.ts";
 import {
   deriveMilestones,
   parseTimelinePreset,
@@ -180,20 +186,61 @@ test("closingDays comes from the last milestone", () => {
 /* Share links                                                                */
 /* -------------------------------------------------------------------------- */
 
-test("a deal survives a round trip through a share link", () => {
+test("everything the buyer sees survives a round trip", () => {
   const original = setMilestoneDone(progress(), PRESET, "inspection", true);
-  const decoded = decodeProgress(encodeProgress(original));
+  const decoded = decodeProgress(encodeProgress(original, "2026-09-14"))!;
 
-  assert.deepEqual(decoded, original);
+  assert.equal(decoded.buyerName, original.buyerName);
+  assert.equal(decoded.propertyAddress, original.propertyAddress);
+  assert.equal(decoded.presetId, original.presetId);
+  assert.equal(decoded.acceptedDate, original.acceptedDate);
+  assert.deepEqual(decoded.milestones, original.milestones);
+  assert.equal(decoded.sharedAt, "2026-09-14", "so the buyer can date it");
+});
+
+test("agent bookkeeping never rides along in a client link", () => {
+  const original = progress();
+  original.sharedFingerprint = "whatever-was-last-sent";
+
+  const decoded = decodeProgress(encodeProgress(original, "2026-09-14"))!;
+  assert.equal(decoded.sharedFingerprint, undefined);
+});
+
+test("the fingerprint tracks what the buyer would see, and nothing else", () => {
+  const base = progress();
+  assert.equal(fingerprint(base), fingerprint({ ...base }), "same content, same signature");
+
+  // Recording a send must not itself look like a change.
+  assert.equal(
+    fingerprint({ ...base, sharedAt: "2026-09-14", sharedFingerprint: "x" }),
+    fingerprint(base),
+  );
+
+  // A real edit must.
+  const moved = setMilestoneDone(base, PRESET, "inspection", true);
+  assert.notEqual(fingerprint(moved), fingerprint(base));
+});
+
+test("milestone key order does not change the fingerprint", () => {
+  // Otherwise a re-save would falsely read as "out of date".
+  const a = progress();
+  a.milestones = { inspection: { done: true }, appraisal: { done: false } };
+  const b = progress();
+  b.milestones = { appraisal: { done: false }, inspection: { done: true } };
+
+  assert.equal(fingerprint(a), fingerprint(b));
 });
 
 test("names outside ASCII survive encoding", () => {
   const original = progress({ buyerName: "José Müller-Nakamura 中村", propertyAddress: "12 Café Ln" });
-  assert.equal(decodeProgress(encodeProgress(original))?.buyerName, original.buyerName);
+  assert.equal(
+    decodeProgress(encodeProgress(original, "2026-09-14"))?.buyerName,
+    original.buyerName,
+  );
 });
 
 test("the token is URL safe", () => {
-  const token = encodeProgress(progress({ buyerName: "?&=#/+ tricky" }));
+  const token = encodeProgress(progress({ buyerName: "?&=#/+ tricky" }), "2026-09-14");
   assert.equal(/^[A-Za-z0-9_-]+$/.test(token), true, `not url safe: ${token}`);
 });
 
@@ -210,11 +257,11 @@ function toBase64(text: string): string {
 
 test("shareUrl points at /track and round-trips through the hash", () => {
   const deal = progress();
-  const url = shareUrl("http://localhost:3000/", deal);
+  const url = shareUrl("http://localhost:3000/", deal, "2026-09-14");
 
   assert.equal(url.startsWith("http://localhost:3000/track#d="), true, url);
   const hash = url.slice(url.indexOf("#"));
-  assert.deepEqual(decodeProgress(tokenFromHash(hash)), deal);
+  assert.equal(decodeProgress(tokenFromHash(hash))?.acceptedDate, deal.acceptedDate);
 });
 
 test("a hash that is not ours yields no token", () => {

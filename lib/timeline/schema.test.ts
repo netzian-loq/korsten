@@ -9,10 +9,17 @@ import {
   tokenFromHash,
 } from "./share-link.ts";
 import {
+  addStep,
   deriveMilestones,
+  moveStep,
+  outOfOrderSteps,
   parseTimelinePreset,
+  removeStep,
+  sanitizeSteps,
   setMilestoneDone,
+  sortStepsByDay,
   summarize,
+  updateStep,
   type ClientProgress,
   type TimelinePreset,
 } from "./schema.ts";
@@ -267,4 +274,105 @@ test("shareUrl points at /track and round-trips through the hash", () => {
 test("a hash that is not ours yields no token", () => {
   assert.equal(tokenFromHash("#something-else"), "");
   assert.equal(tokenFromHash(""), "");
+});
+
+/* -------------------------------------------------------------------------- */
+/* Editing the steps                                                          */
+/* -------------------------------------------------------------------------- */
+
+const names = (p: ClientProgress) => deriveMilestones(p, PRESET).map((m) => m.name);
+
+test("renaming a step copies the preset onto the deal and leaves the preset alone", () => {
+  const edited = updateStep(progress(), PRESET, "inspection", { name: "Walk-through with inspector" });
+
+  assert.deepEqual(names(edited), ["accepted", "Walk-through with inspector", "appraisal", "closing"]);
+  assert.equal(PRESET.milestones[1].name, "inspection", "the preset is never mutated");
+});
+
+test("a re-timed step moves its calculated date", () => {
+  const edited = updateStep(progress(), PRESET, "inspection", { offsetDays: 10 });
+  assert.equal(deriveMilestones(edited, PRESET)[1].date, "2026-09-23");
+});
+
+test("a new step lands at the end, on the last step's day", () => {
+  const edited = addStep(progress(), PRESET, "keys");
+  const derived = deriveMilestones(edited, PRESET);
+
+  assert.equal(derived.length, 5);
+  assert.equal(derived[4].id, "keys");
+  assert.equal(derived[4].offsetDays, 30);
+  assert.equal(derived[4].step, 5);
+});
+
+test("removing a step drops its recorded state too", () => {
+  const ticked = setMilestoneDone(progress(), PRESET, "inspection", true);
+  const edited = removeStep(ticked, PRESET, "inspection");
+
+  assert.deepEqual(names(edited), ["accepted", "appraisal", "closing"]);
+  assert.equal(edited.milestones.inspection, undefined);
+});
+
+test("the last remaining step cannot be removed", () => {
+  let deal = progress({ steps: [milestone("only", 0)] });
+  deal = removeStep(deal, PRESET, "only");
+  assert.equal(deal.steps?.length, 1);
+});
+
+test("steps move up and down, and not off either end", () => {
+  const up = moveStep(progress(), PRESET, "appraisal", -1);
+  assert.deepEqual(names(up), ["accepted", "appraisal", "inspection", "closing"]);
+
+  const stuck = moveStep(progress(), PRESET, "accepted", -1);
+  assert.deepEqual(names(stuck), names(progress()));
+});
+
+test("out-of-order days are flagged, and sorting fixes them", () => {
+  const moved = moveStep(progress(), PRESET, "appraisal", -1);
+  const steps = moved.steps!;
+  assert.deepEqual([...outOfOrderSteps(steps)], ["inspection"]);
+
+  const sorted = sortStepsByDay(moved, PRESET);
+  assert.deepEqual(names(sorted), ["accepted", "inspection", "appraisal", "closing"]);
+  assert.equal(outOfOrderSteps(sorted.steps!).size, 0);
+});
+
+test("ticking a step works on the deal's own steps", () => {
+  const edited = addStep(progress(), PRESET, "keys");
+  const done = setMilestoneDone(edited, PRESET, "keys", true);
+  assert.equal(summarize(deriveMilestones(done, PRESET)).done, 5);
+});
+
+test("custom steps ride along in the buyer's link", () => {
+  const edited = updateStep(progress(), PRESET, "inspection", { name: "Inspector visit" });
+  const decoded = decodeProgress(encodeProgress(edited, "2026-09-14"))!;
+
+  assert.deepEqual(decoded.steps, edited.steps);
+  // The buyer's page has no saved customisations; the link alone must do it.
+  assert.equal(deriveMilestones(decoded, null)[1].name, "Inspector visit");
+});
+
+test("editing a step makes a sent link read as out of date", () => {
+  const base = progress();
+  const renamed = updateStep(base, PRESET, "closing", { name: "Keys!" });
+  assert.notEqual(fingerprint(renamed), fingerprint(base));
+});
+
+test("a link without custom steps decodes with none", () => {
+  assert.equal(decodeProgress(encodeProgress(progress(), "2026-09-14"))!.steps, undefined);
+});
+
+test("malformed steps are cleaned or dropped, never trusted", () => {
+  assert.equal(sanitizeSteps("nope"), null);
+  assert.equal(sanitizeSteps([]), null);
+  assert.equal(sanitizeSteps([{ id: "x" }]), null, "no offset, no step");
+
+  const clean = sanitizeSteps([
+    { id: "a", name: "A", offsetDays: 2.6, buyerNote: 5, waitingOn: "w" },
+    { id: "a", name: "duplicate", offsetDays: 3 },
+    { id: "b", offsetDays: -4 },
+  ]);
+  assert.deepEqual(clean, [
+    { id: "a", name: "A", offsetDays: 3, buyerNote: "", waitingOn: "w" },
+    { id: "b", name: "", offsetDays: 0, buyerNote: "", waitingOn: "" },
+  ]);
 });

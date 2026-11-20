@@ -45,14 +45,6 @@ export type ClientProgress = {
   acceptedDate: string;
   /** Keyed by milestone id. Absent means untouched. */
   milestones: Record<string, MilestoneState>;
-  /**
-   * The agent's own version of the steps for this deal — renamed, added,
-   * removed or reordered. Absent means the preset's steps, unchanged.
-   *
-   * Kept on the deal rather than looked up by preset id so a shared link
-   * carries it: the buyer's phone has no idea what this agent customised.
-   */
-  steps?: TimelineMilestone[];
   createdAt: string;
   /** When the agent last copied a link, and the signature of what it held. */
   sharedAt?: string;
@@ -76,14 +68,6 @@ export type DerivedMilestone = TimelineMilestone & {
 /* Deriving the live timeline                                                 */
 /* -------------------------------------------------------------------------- */
 
-/** The steps this deal runs on: the agent's own list, else the preset's. */
-export function timelineSteps(
-  progress: ClientProgress,
-  preset: TimelinePreset | null,
-): TimelineMilestone[] {
-  return progress.steps ?? preset?.milestones ?? [];
-}
-
 /**
  * The preset's milestones with dates and status filled in.
  *
@@ -95,13 +79,13 @@ export function deriveMilestones(
   progress: ClientProgress,
   preset: TimelinePreset | null,
 ): DerivedMilestone[] {
-  const steps = timelineSteps(progress, preset);
+  if (!preset) return [];
 
-  const currentIndex = steps.findIndex(
+  const currentIndex = preset.milestones.findIndex(
     (milestone) => progress.milestones[milestone.id]?.done !== true,
   );
 
-  return steps.map((milestone, index) => {
+  return preset.milestones.map((milestone, index) => {
     const state = progress.milestones[milestone.id];
     const calculated = addDays(progress.acceptedDate, milestone.offsetDays);
     const date = state?.date ?? calculated;
@@ -157,159 +141,19 @@ export function setMilestoneDone(
   milestoneId: string,
   done: boolean,
 ): ClientProgress {
-  const steps = timelineSteps(progress, preset);
+  if (!preset) return progress;
 
-  const index = steps.findIndex((m) => m.id === milestoneId);
+  const index = preset.milestones.findIndex((m) => m.id === milestoneId);
   if (index === -1) return progress;
 
   const milestones = { ...progress.milestones };
 
-  steps.forEach((milestone, position) => {
+  preset.milestones.forEach((milestone, position) => {
     const shouldBeDone = done ? position <= index : position < index;
     milestones[milestone.id] = { ...milestones[milestone.id], done: shouldBeDone };
   });
 
   return { ...progress, milestones };
-}
-
-/* -------------------------------------------------------------------------- */
-/* Editing the steps                                                          */
-/* -------------------------------------------------------------------------- */
-
-/*
- * Each of these starts from timelineSteps, so the first edit to a deal copies
- * the preset's steps onto it and every edit after works on that copy. The
- * preset JSON itself is never touched.
- */
-
-export type StepPatch = Partial<Omit<TimelineMilestone, "id">>;
-
-export function updateStep(
-  progress: ClientProgress,
-  preset: TimelinePreset | null,
-  stepId: string,
-  patch: StepPatch,
-): ClientProgress {
-  return {
-    ...progress,
-    steps: timelineSteps(progress, preset).map((step) =>
-      step.id === stepId ? { ...step, ...patch } : step,
-    ),
-  };
-}
-
-/**
- * Appends a blank step at the end, on the same day as the last one so it does
- * not land out of order. The id is passed in so tests can pin it.
- */
-export function addStep(
-  progress: ClientProgress,
-  preset: TimelinePreset | null,
-  id: string,
-): ClientProgress {
-  const steps = timelineSteps(progress, preset);
-  const lastDay = steps.length === 0 ? 0 : steps[steps.length - 1].offsetDays;
-
-  return {
-    ...progress,
-    steps: [
-      ...steps,
-      { id, name: "", offsetDays: lastDay, buyerNote: "", waitingOn: "" },
-    ],
-  };
-}
-
-/** Drops a step and whatever was recorded against it (ticks, moved dates). */
-export function removeStep(
-  progress: ClientProgress,
-  preset: TimelinePreset | null,
-  stepId: string,
-): ClientProgress {
-  const steps = timelineSteps(progress, preset);
-  // A timeline with no steps has nothing to show the buyer.
-  if (steps.length <= 1) return progress;
-
-  const milestones = { ...progress.milestones };
-  delete milestones[stepId];
-
-  return {
-    ...progress,
-    milestones,
-    steps: steps.filter((step) => step.id !== stepId),
-  };
-}
-
-/** Swaps a step with its neighbour; a move off either end does nothing. */
-export function moveStep(
-  progress: ClientProgress,
-  preset: TimelinePreset | null,
-  stepId: string,
-  direction: -1 | 1,
-): ClientProgress {
-  const steps = [...timelineSteps(progress, preset)];
-  const from = steps.findIndex((step) => step.id === stepId);
-  const to = from + direction;
-  if (from === -1 || to < 0 || to >= steps.length) return progress;
-
-  [steps[from], steps[to]] = [steps[to], steps[from]];
-  return { ...progress, steps };
-}
-
-/** Puts the steps in day order. Stable, so same-day steps keep their order. */
-export function sortStepsByDay(
-  progress: ClientProgress,
-  preset: TimelinePreset | null,
-): ClientProgress {
-  return {
-    ...progress,
-    steps: [...timelineSteps(progress, preset)].sort(
-      (a, b) => a.offsetDays - b.offsetDays,
-    ),
-  };
-}
-
-/** Ids of steps scheduled earlier than the step above them. */
-export function outOfOrderSteps(steps: TimelineMilestone[]): Set<string> {
-  const ids = new Set<string>();
-  steps.forEach((step, index) => {
-    if (index > 0 && step.offsetDays < steps[index - 1].offsetDays) ids.add(step.id);
-  });
-  return ids;
-}
-
-/** Whether a list of steps is word-for-word the preset's. */
-export function sameSteps(a: TimelineMilestone[], b: TimelineMilestone[]): boolean {
-  return JSON.stringify(a) === JSON.stringify(b);
-}
-
-/**
- * Cleans steps that came from somewhere untrusted (a shared link, storage).
- * Returns null if nothing usable survives, so the caller falls back to the
- * preset rather than drawing an empty timeline.
- */
-export function sanitizeSteps(raw: unknown): TimelineMilestone[] | null {
-  if (!Array.isArray(raw)) return null;
-
-  const seen = new Set<string>();
-  const steps: TimelineMilestone[] = [];
-
-  for (const item of raw) {
-    if (!isRecord(item)) continue;
-    const { id, name, offsetDays, buyerNote, waitingOn } = item;
-    if (typeof id !== "string" || id === "" || seen.has(id)) continue;
-    if (typeof offsetDays !== "number" || !Number.isFinite(offsetDays)) continue;
-    seen.add(id);
-
-    steps.push({
-      id,
-      name: typeof name === "string" ? name : "",
-      offsetDays: Math.max(0, Math.round(offsetDays)),
-      buyerNote: typeof buyerNote === "string" ? buyerNote : "",
-      waitingOn: typeof waitingOn === "string" ? waitingOn : "",
-    });
-  }
-
-  return steps.length === 0 ? null : steps;
 }
 
 /* -------------------------------------------------------------------------- */

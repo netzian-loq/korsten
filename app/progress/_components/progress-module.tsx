@@ -1,6 +1,6 @@
 "use client";
 
-import { CalendarDays, Check, ChevronRight, ListChecks, Pencil, RotateCcw } from "lucide-react";
+import { CalendarDays, ChevronRight, ListChecks, RotateCcw } from "lucide-react";
 import { useState } from "react";
 
 import { BuyerTimeline } from "@/app/_components/buyer-timeline";
@@ -13,11 +13,9 @@ import {
 import {
   deriveMilestones,
   getTimelinePreset,
-  sameSteps,
   summarize,
   TIMELINE_PRESETS,
 } from "@/lib/timeline";
-import { useTimelineDefaults } from "@/lib/timeline-defaults-store";
 
 import { MilestoneEditor } from "./milestone-editor";
 import { SharePanel } from "./share-panel";
@@ -30,7 +28,6 @@ const FIELD_LABEL =
 export function ProgressModule() {
   const progress = useProgress();
   const [confirmReset, setConfirmReset] = useState(false);
-  const [editingSteps, setEditingSteps] = useState(false);
 
   const preset = getTimelinePreset(progress.presetId);
   const milestones = deriveMilestones(progress, preset);
@@ -91,7 +88,6 @@ export function ProgressModule() {
                 if (confirmReset) {
                   resetProgress();
                   setConfirmReset(false);
-                  setEditingSteps(false);
                 } else {
                   setConfirmReset(true);
                 }
@@ -125,40 +121,18 @@ export function ProgressModule() {
                 <h2 id="milestones-heading" className="text-eyebrow uppercase text-ink-400">
                   {preset.name}
                 </h2>
-                <div className="flex items-center gap-3">
-                  {!editingSteps && (
-                    <p className="text-xs text-ink-500">
-                      <span data-numeric className="font-semibold text-ink-900">
-                        {summary.done} of {summary.total}
-                      </span>{" "}
-                      complete
-                    </p>
-                  )}
-                  <button
-                    type="button"
-                    onClick={() => setEditingSteps((open) => !open)}
-                    aria-pressed={editingSteps}
-                    className={`inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-semibold transition-colors ${
-                      editingSteps
-                        ? "bg-accent-500 text-navy-950 hover:bg-accent-400"
-                        : "border border-card-edge text-ink-700 hover:bg-card-sunken hover:text-ink-900"
-                    }`}
-                  >
-                    {editingSteps ? (
-                      <Check className="size-3.5" strokeWidth={2.5} aria-hidden />
-                    ) : (
-                      <Pencil className="size-3.5" strokeWidth={2.25} aria-hidden />
-                    )}
-                    {editingSteps ? "Done" : "Edit steps"}
-                  </button>
-                </div>
+                <p className="text-xs text-ink-500">
+                  <span data-numeric className="font-semibold text-ink-900">
+                    {summary.done} of {summary.total}
+                  </span>{" "}
+                  complete
+                </p>
               </div>
 
               <MilestoneEditor
                 progress={progress}
                 preset={preset}
                 milestones={milestones}
-                editing={editingSteps}
               />
             </section>
 
@@ -179,8 +153,6 @@ export function ProgressModule() {
 
 /** Choosing the deal skeleton. */
 function PresetPicker() {
-  const defaults = useTimelineDefaults();
-
   return (
     <div className="card mt-4 p-5 md:p-6">
       <h2 className="text-title text-ink-900">Pick a deal skeleton</h2>
@@ -191,12 +163,7 @@ function PresetPicker() {
       </p>
 
       <ul className="mt-5 flex flex-col gap-2.5">
-        {TIMELINE_PRESETS.map((preset) => {
-          const saved = defaults[preset.id];
-          const custom = saved !== undefined && !sameSteps(saved, preset.milestones);
-          const steps = saved ?? preset.milestones;
-
-          return (
+        {TIMELINE_PRESETS.map((preset) => (
           <li key={preset.id}>
             <button
               type="button"
@@ -204,23 +171,16 @@ function PresetPicker() {
               className="group flex w-full items-center gap-3 rounded-tile border border-card-edge p-3.5 text-left transition-colors hover:border-accent-400 hover:bg-card-muted"
             >
               <div className="min-w-0 flex-1">
-                <p className="font-semibold text-ink-900">
-                  {preset.name}
-                  {custom && (
-                    <span className="ml-2 rounded-full bg-accent-500/12 px-2 py-0.5 text-[0.625rem] font-bold uppercase tracking-wide text-accent-600">
-                      Your steps
-                    </span>
-                  )}
-                </p>
+                <p className="font-semibold text-ink-900">{preset.name}</p>
                 <p className="mt-0.5 text-sm text-ink-500">{preset.summary}</p>
                 <p className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-ink-400">
                   <span className="inline-flex items-center gap-1">
                     <CalendarDays className="size-3.5" strokeWidth={2} aria-hidden />
-                    {steps[steps.length - 1].offsetDays} days to close
+                    {preset.closingDays} days to close
                   </span>
                   <span className="inline-flex items-center gap-1">
                     <ListChecks className="size-3.5" strokeWidth={2} aria-hidden />
-                    {steps.length} milestones
+                    {preset.milestones.length} milestones
                   </span>
                 </p>
               </div>
@@ -231,8 +191,7 @@ function PresetPicker() {
               />
             </button>
           </li>
-          );
-        })}
+        ))}
       </ul>
     </div>
   );

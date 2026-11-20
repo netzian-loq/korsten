@@ -3,7 +3,6 @@
 import { useSyncExternalStore } from "react";
 
 import { createProgress, type ClientProgress } from "./timeline";
-import { savedSteps } from "./timeline-defaults-store";
 
 /**
  * The deal currently under contract, kept in localStorage.
@@ -87,17 +86,9 @@ export function replaceProgress(next: ClientProgress) {
   write(next);
 }
 
-/** Replaces the record with a function of the latest one, never a stale copy. */
-export function editProgress(change: (current: ClientProgress) => ClientProgress) {
-  write(change(read()));
-}
-
-/**
- * Choosing a preset starts the timeline fresh, clearing any ticked steps. If
- * the agent saved their own steps for this skeleton, the deal starts from those.
- */
+/** Choosing a preset starts the timeline fresh, clearing any ticked steps. */
 export function assignTimelinePreset(presetId: string) {
-  write({ ...read(), presetId, milestones: {}, steps: savedSteps(presetId) });
+  write({ ...read(), presetId, milestones: {} });
 }
 
 /** Moves one milestone off its calculated date. */

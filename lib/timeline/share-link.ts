@@ -1,4 +1,4 @@
-import type { ClientProgress } from "./schema.ts";
+import { sanitizeSteps, type ClientProgress } from "./schema.ts";
 
 /**
  * Encoding a deal into a shareable link.
@@ -48,6 +48,9 @@ export function sharedPayload(progress: ClientProgress) {
     presetId: progress.presetId,
     acceptedDate: progress.acceptedDate,
     milestones: progress.milestones,
+    // Only present once the agent has edited the steps; JSON drops undefined,
+    // so links for untouched deals stay as short as before.
+    steps: progress.steps,
   };
 }
 
@@ -97,6 +100,8 @@ export function decodeProgress(token: string): ClientProgress | null {
       ...payload,
       id: payload.id ?? "shared",
       createdAt: payload.createdAt ?? "",
+      // Anything malformed falls back to the preset's own steps.
+      steps: sanitizeSteps(payload.steps) ?? undefined,
     } as ClientProgress;
   } catch {
     return null;

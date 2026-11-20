@@ -69,7 +69,7 @@ export function BuyerTimeline({
                 strokeWidth={2.25}
                 aria-hidden
               />
-              {summary.current.waitingOn}
+              {summary.current.waitingOn || summary.current.name || "The next step"}
             </p>
           </div>
         ) : (
@@ -148,7 +148,7 @@ export function BuyerTimeline({
                       milestone.status === "upcoming" ? "text-ink-500" : "text-ink-900"
                     }`}
                   >
-                    {milestone.name}
+                    {milestone.name.trim() || "Untitled step"}
                   </p>
                   <p className="shrink-0 font-mono text-xs text-ink-400">
                     {formatISODateShort(milestone.date ?? "")}
@@ -157,9 +157,11 @@ export function BuyerTimeline({
 
                 {milestone.status === "current" && (
                   <>
+                    {milestone.buyerNote && (
                     <p className="mt-1 text-sm leading-relaxed text-ink-700">
                       {milestone.buyerNote}
                     </p>
+                    )}
                     {away !== null && (
                       <p className="mt-1.5 text-xs font-semibold text-accent-600">
                         {away === 0
@@ -172,7 +174,7 @@ export function BuyerTimeline({
                   </>
                 )}
 
-                {milestone.status === "upcoming" && (
+                {milestone.status === "upcoming" && milestone.buyerNote && (
                   <p className="mt-1 text-xs leading-relaxed text-ink-400">
                     {milestone.buyerNote}
                   </p>
